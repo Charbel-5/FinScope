@@ -1,3 +1,4 @@
+import './TransactionBox.css';
 
 function TransactionBox( props) {
   return (

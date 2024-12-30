@@ -1,22 +1,23 @@
+import { Link } from 'react-router-dom';
 import './MainNavbar.css';
 
 function MainNavbar() {
   return (
     <div className="topnav">
-        <a className="active">Transactions</a>
-        <a>Accounts</a>
-        <a>Stats</a>
+      <Link to="/transactions" className="active">Transactions</Link>
+      <Link to="/accounts">Accounts</Link>
+      <Link to="/stats">Stats</Link>
 
-        <div className="dropdown">
-            <a className="dropbtn">More</a>
-            <div className="dropdown-content">
-                <a>Settings</a>
-                <a>Debt Calculator</a>
-                <a>Stocks</a>
-            </div>
+      <div className="dropdown">
+        <button className="dropbtn">More</button>
+        <div className="dropdown-content">
+          <Link to="/settings">Settings</Link>
+          <Link to="/debt-calculator">Debt Calculator</Link>
+          <Link to="/stocks">Stocks</Link>
         </div>
+      </div>
 
-        <a className="logout">Log Out</a>
+      <Link to="#" className="logout">Log Out</Link>
     </div>
   );
 }

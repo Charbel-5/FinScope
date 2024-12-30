@@ -1,6 +1,10 @@
 .topnav {
     background-color: #333;
     overflow: hidden;
+    position: fixed; /* Make the navbar fixed */
+    top: 0; /* Position it at the top */
+    width: 100%; /* Full width */
+    z-index: 1000; /* Ensure it stays on top of other elements */
 }
 
 .topnav a {
