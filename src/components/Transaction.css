@@ -1,0 +1,33 @@
+.transaction {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.transaction:last-child {
+  border-bottom: none;
+}
+
+.transaction-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.transaction-name {
+  font-weight: bold;
+}
+
+.transaction-meta {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.transaction-accounts {
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.transaction-amount {
+  font-weight: bold;
+}
