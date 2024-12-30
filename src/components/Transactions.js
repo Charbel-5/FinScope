@@ -1,3 +1,5 @@
+import TransactionBox from "./TransactionBox";
+import Transaction from "./Transaction"; // Import the Transaction component
 
 function Transactions(){
     const dummyTransactions = [
@@ -185,8 +187,27 @@ function Transactions(){
           currency: 'USD'
         }
     ];
-    
+
     return (
         
+        dummyTransactions.map((txn, idx) => (
+        <TransactionBox>
+            <Transaction
+                key={idx}
+                date={txn.date}
+                amount={txn.amount}
+                accountFrom={txn.accountFrom}
+                accountTo={txn.accountTo}
+                transactionName={txn.transactionName}
+                category={txn.category}
+                type={txn.type}
+                currency={txn.currency}
+            />
+        </TransactionBox>
+        
+        ))
+
     );
 }
+
+export default Transactions;
