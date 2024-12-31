@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import TransactionBox from "../components/TransactionBox";
 import Transaction from "../components/Transaction"; // Import the Transaction component
 import MonthlySwitcher from "../components/MonthlySwitcher";
@@ -251,13 +252,40 @@ function Transactions(){
 
     console.log(transactionsGrouped);
 
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    const handlePrevious = () => {
+      if (currentIndex < transactionsGrouped.length - 1) {
+        setCurrentIndex(currentIndex + 1);
+      }
+    };
+
+    const handleNext = () => {
+      if (currentIndex > 0) {
+        setCurrentIndex(currentIndex - 1);
+      }
+    };
+
+    const currentMonthTransactions = transactionsGrouped[currentIndex] || [];
+
+    const getMonthYearLabel = (index) => {
+      const group = transactionsGrouped[index];
+      if (!group || group.length === 0) return 'No Data';
+      const date = new Date(group[0].date);
+      return date.toLocaleString('default', { month: 'long', year: 'numeric' });
+    };
 
     return (
-        <MonthlySwitcher transactionsGrouped={transactionsGrouped} />
-        /*sortedTransactions.map((txn, idx) => (
-        <TransactionBox>
-            <Transaction
-                key={idx}
+      <>
+        <MonthlySwitcher
+          displayMonthYear={getMonthYearLabel(currentIndex)}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+        />
+        <div>
+          {currentMonthTransactions.map((txn, idx) => (
+            <TransactionBox key={idx}>
+              <Transaction
                 date={txn.date}
                 amount={txn.amount}
                 accountFrom={txn.accountFrom}
@@ -266,11 +294,11 @@ function Transactions(){
                 category={txn.category}
                 type={txn.type}
                 currency={txn.currency}
-            />
-        </TransactionBox>
-        
-        ))*/
-
+              />
+            </TransactionBox>
+          ))}
+        </div>
+      </>
     );
 }
 
