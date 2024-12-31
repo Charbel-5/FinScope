@@ -198,28 +198,22 @@ function Transactions(){
       if (!transactions || transactions.length === 0) {
         return [];
       }
-      
-      // 1. Identify the earliest (oldest) transaction date.
-      //    Since `transactions` is sorted DESC, the last element is the oldest.
+    
       const oldestTransaction = transactions[transactions.length - 1];
       const oldestDate = new Date(oldestTransaction.date);
       const oldestYear = oldestDate.getFullYear();
-      const oldestMonth = oldestDate.getMonth(); // 0-based
-
-      // 2. Get the current system year and month (0-based).
+      const oldestMonth = oldestDate.getMonth();
+    
       const now = new Date();
       let currentYear = now.getFullYear();
       let currentMonth = now.getMonth();
-
+    
       const results = [];
-
-      // 3. Loop from the current (year, month) down to the (oldestYear, oldestMonth).
-      //    At each step, gather that month's transactions OR push null if none.
+    
       while (
         currentYear > oldestYear ||
         (currentYear === oldestYear && currentMonth >= oldestMonth)
       ) {
-        // Gather transactions for this (year, month).
         const monthlyTransactions = transactions.filter(tx => {
           const txDate = new Date(tx.date);
           return (
@@ -227,77 +221,73 @@ function Transactions(){
             txDate.getMonth() === currentMonth
           );
         });
-
-        // If no transactions for the current month, push null; otherwise, push the array.
-        if (monthlyTransactions.length === 0) {
-          results.push(null);
-        } else {
-          results.push(monthlyTransactions);
-        }
-
-        // Decrement the month
+    
+        results.push({
+          year: currentYear,
+          month: currentMonth,
+          transactions: monthlyTransactions
+        });
+    
         currentMonth--;
         if (currentMonth < 0) {
-          currentMonth = 11; // December
+          currentMonth = 11;
           currentYear--;
         }
       }
-
       return results;
     }
 
 
     const sortedTransactions = sortTransactionsByDateDescending(dummyTransactions);
-    const transactionsGrouped = groupTransactionsByMonthFromCurrent(sortedTransactions);
+  const transactionsGrouped = groupTransactionsByMonthFromCurrent(sortedTransactions);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-    console.log(transactionsGrouped);
+  const handlePrevious = () => {
+    if (currentIndex < transactionsGrouped.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
+  };
 
-    const [currentIndex, setCurrentIndex] = useState(0);
+  const handleNext = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
 
-    const handlePrevious = () => {
-      if (currentIndex < transactionsGrouped.length - 1) {
-        setCurrentIndex(currentIndex + 1);
-      }
-    };
+  const currentGroup = transactionsGrouped[currentIndex] || {};
+  const currentMonthTransactions = currentGroup.transactions || [];
 
-    const handleNext = () => {
-      if (currentIndex > 0) {
-        setCurrentIndex(currentIndex - 1);
-      }
-    };
-
-    const currentMonthTransactions = transactionsGrouped[currentIndex] || [];
-
-    const getMonthYearLabel = (index) => {
-      const group = transactionsGrouped[index];
-      if (!group || group.length === 0) return 'No Data';
-      const date = new Date(group[0].date);
-      return date.toLocaleString('default', { month: 'long', year: 'numeric' });
-    };
+  const getMonthYearLabel = (index) => {
+    const group = transactionsGrouped[index];
+    if (!group) return '';
+    const { year, month } = group;
+    const date = new Date(year, month, 1);
+    return date.toLocaleString('default', { month: 'long', year: 'numeric' });
+  };
 
     return (
       <>
-        <MonthlySwitcher
-          displayMonthYear={getMonthYearLabel(currentIndex)}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-        />
-        <div>
-          {currentMonthTransactions.map((txn, idx) => (
-            <TransactionBox key={idx}>
-              <Transaction
-                date={txn.date}
-                amount={txn.amount}
-                accountFrom={txn.accountFrom}
-                accountTo={txn.accountTo}
-                transactionName={txn.transactionName}
-                category={txn.category}
-                type={txn.type}
-                currency={txn.currency}
-              />
-            </TransactionBox>
-          ))}
-        </div>
+      <MonthlySwitcher
+        displayMonthYear={getMonthYearLabel(currentIndex)}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+      />
+      <div>
+        {currentMonthTransactions.map((txn, idx) => (
+          <TransactionBox key={idx}>
+            <Transaction
+              date={txn.date}
+              amount={txn.amount}
+              accountFrom={txn.accountFrom}
+              accountTo={txn.accountTo}
+              transactionName={txn.transactionName}
+              category={txn.category}
+              type={txn.type}
+              currency={txn.currency}
+            />
+          </TransactionBox>
+        ))}
+      </div>
       </>
     );
 }
