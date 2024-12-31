@@ -1,5 +1,7 @@
 import TransactionBox from "../components/TransactionBox";
 import Transaction from "../components/Transaction"; // Import the Transaction component
+import MonthlySwitcher from "../components/MonthlySwitcher";
+
 
 function Transactions(){
     const dummyTransactions = [
@@ -251,8 +253,8 @@ function Transactions(){
 
 
     return (
-        
-        sortedTransactions.map((txn, idx) => (
+        <MonthlySwitcher transactionsGrouped={transactionsGrouped} />
+        /*sortedTransactions.map((txn, idx) => (
         <TransactionBox>
             <Transaction
                 key={idx}
@@ -267,7 +269,7 @@ function Transactions(){
             />
         </TransactionBox>
         
-        ))
+        ))*/
 
     );
 }
