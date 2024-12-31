@@ -1,12 +1,12 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import MainNavbar from './components/MainNavbar';
-import Transactions from './components/Transactions';
-import Accounts from './components/Accounts';
-import Stats from './components/Stats';
-import Settings from './components/Settings';
-import DebtCalculator from './components/DebtCalculator';
-import Stocks from './components/Stocks';
+import Transactions from './pages/Transactions';
+import Accounts from './pages/Accounts';
+import Stats from './pages/Stats';
+import Settings from './pages/Settings';
+import DebtCalculator from './pages/DebtCalculator';
+import Stocks from './pages/Stocks';
 
 function App() {
 
