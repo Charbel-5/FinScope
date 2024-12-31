@@ -2,6 +2,8 @@ import { useState } from 'react';
 import TransactionBox from "../components/TransactionBox";
 import Transaction from "../components/Transaction"; // Import the Transaction component
 import MonthlySwitcher from "../components/MonthlySwitcher";
+import TransactionInput from '../components/TransactionInput';
+
 
 
 function Transactions(){
@@ -238,7 +240,7 @@ function Transactions(){
     }
 
 
-    const sortedTransactions = sortTransactionsByDateDescending(dummyTransactions);
+  const sortedTransactions = sortTransactionsByDateDescending(dummyTransactions);
   const transactionsGrouped = groupTransactionsByMonthFromCurrent(sortedTransactions);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -265,6 +267,8 @@ function Transactions(){
     return date.toLocaleString('default', { month: 'long', year: 'numeric' });
   };
 
+  const [showForm, setShowForm] = useState(false);
+
     return (
       <>
       <MonthlySwitcher
@@ -272,6 +276,12 @@ function Transactions(){
         onPrevious={handlePrevious}
         onNext={handleNext}
       />
+
+      <button style={{ float: 'right' }} onClick={() => setShowForm(true)}>+</button>
+      {showForm && (
+        <TransactionInput onClose={() => setShowForm(false)} />
+      )}
+
       <div>
         {currentMonthTransactions.map((txn, idx) => (
           <TransactionBox key={idx}>

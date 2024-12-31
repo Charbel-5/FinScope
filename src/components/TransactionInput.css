@@ -1,0 +1,28 @@
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal-content {
+    background-color: #fff;
+    padding: 16px;
+    border-radius: 8px;
+  }
+  
+  .switches {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  
+  .switches .active {
+    background-color: #04AA6D;
+    color: #fff;
+  }
