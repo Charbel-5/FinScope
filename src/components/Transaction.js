@@ -8,7 +8,9 @@ function Transaction({
   transactionName,
   category,
   type,
-  currency
+  currency,
+  onEdit, 
+  onDelete
 }) {
   return (
     <div className="transaction">
@@ -32,6 +34,12 @@ function Transaction({
       <div className="transaction-amount">
         {amount} {currency}
       </div>
+
+      <div className="transaction-actions">
+        <button onClick={onEdit}>Edit</button>
+        <button onClick={onDelete}>Delete</button>
+      </div>
+
     </div>
   );
 }

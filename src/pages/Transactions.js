@@ -267,7 +267,31 @@ function Transactions(){
     return date.toLocaleString('default', { month: 'long', year: 'numeric' });
   };
 
+  const [transactions, setTransactions] = useState(dummyTransactions);
   const [showForm, setShowForm] = useState(false);
+  const [editData, setEditData] = useState(null);
+
+  const handleDelete = (index) => {
+    const newList = [...transactions];
+    newList.splice(index, 1);
+    setTransactions(newList);
+  };
+
+  const handleEdit = (txn, index) => {
+    setEditData({ ...txn, index });
+    setShowForm(true);
+  };
+
+  const handleSave = (updatedTxn) => {
+    if (updatedTxn.index != null) {
+      const newList = [...transactions];
+      newList[updatedTxn.index] = updatedTxn;
+      delete updatedTxn.index;
+      setTransactions(newList);
+    } else {
+      setTransactions([...transactions, updatedTxn]);
+    }
+  };
 
     return (
       <>
@@ -279,7 +303,11 @@ function Transactions(){
 
       <button style={{ float: 'right' }} onClick={() => setShowForm(true)}>+</button>
       {showForm && (
-        <TransactionInput onClose={() => setShowForm(false)} />
+        <TransactionInput
+          onClose={() => { setShowForm(false); setEditData(null); }}
+          onSave={handleSave}
+          initialTransaction={editData}
+        />
       )}
 
       <div>
@@ -294,6 +322,8 @@ function Transactions(){
               category={txn.category}
               type={txn.type}
               currency={txn.currency}
+              onEdit={() => handleEdit(txn, idx)}
+              onDelete={() => handleDelete(idx)}
             />
           </TransactionBox>
         ))}

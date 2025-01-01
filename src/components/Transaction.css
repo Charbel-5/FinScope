@@ -31,3 +31,12 @@
 .transaction-amount {
   font-weight: bold;
 }
+
+.transaction-actions {
+  display: none;
+  margin-left: 10px;
+}
+
+.transaction:hover .transaction-actions {
+  display: inline-block;
+}
