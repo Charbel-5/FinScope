@@ -1,258 +1,138 @@
 import { useState } from 'react';
-import TransactionBox from "../components/TransactionBox";
-import Transaction from "../components/Transaction"; // Import the Transaction component
-import MonthlySwitcher from "../components/MonthlySwitcher";
+import TransactionBox from '../components/TransactionBox';
+import Transaction from '../components/Transaction'; // Import the Transaction component
+import MonthlySwitcher from '../components/MonthlySwitcher';
 import TransactionInput from '../components/TransactionInput';
 
+function Transactions() {
+  // Give each transaction a unique ID
+  const dummyTransactions = [
+    {
+      id: 1,
+      date: '2024-05-02',
+      amount: 2500,
+      accountFrom: 'Checking',
+      transactionName: 'Salary',
+      category: 'Salary',
+      type: 'income',
+      currency: 'USD',
+    },
+    {
+      id: 2,
+      date: '2023-06-02',
+      amount: 50,
+      accountFrom: 'Checking',
+      transactionName: 'Groceries',
+      category: 'Food',
+      type: 'expense',
+      currency: 'USD',
+    },
+    {
+      id: 3,
+      date: '2023-07-03',
+      amount: 100,
+      accountFrom: 'Checking',
+      accountTo: 'Savings',
+      transactionName: 'Transfer to Savings',
+      category: 'Transfer',
+      type: 'transfer',
+      currency: 'USD',
+    },
+    {
+      id: 4,
+      date: '2023-08-04',
+      amount: 250,
+      accountFrom: 'Credit Card',
+      transactionName: 'Online Shopping',
+      category: 'Shopping',
+      type: 'expense',
+      currency: 'USD',
+    },
+    {
+      id: 5,
+      date: '2024-09-05',
+      amount: 75,
+      accountFrom: 'Checking',
+      transactionName: 'Restaurant',
+      category: 'Food',
+      type: 'expense',
+      currency: 'USD',
+    },
+    {
+      id: 6,
+      date: '2023-10-06',
+      amount: 1000,
+      accountFrom: 'Checking',
+      transactionName: 'Freelance Income',
+      category: 'Freelance',
+      type: 'income',
+      currency: 'USD',
+    },
+    // ... rest of your transactions, each with a unique `id`
+  ];
 
+  // Sort transactions descending by date
+  function sortTransactionsByDateDescending(txns) {
+    return [...txns].sort((a, b) => new Date(b.date) - new Date(a.date));
+  }
 
-function Transactions(){
-    const dummyTransactions = [
-        {
-          date: '2024-05-02',
-          amount: 2500,
-          accountFrom: 'Checking',
-          transactionName: 'Salary',
-          category: 'Salary',
-          type: 'income',
-          currency: 'USD'
-        },
-        {
-          date: '2023-06-02',
-          amount: 50,
-          accountFrom: 'Checking',
-          transactionName: 'Groceries',
-          category: 'Food',
-          type: 'expense',
-          currency: 'USD'
-        },
-        {
-          date: '2023-07-03',
-          amount: 100,
-          accountFrom: 'Checking',
-          accountTo: 'Savings',
-          transactionName: 'Transfer to Savings',
-          category: 'Transfer',
-          type: 'transfer',
-          currency: 'USD'
-        },
-        {
-          date: '2023-08-04',
-          amount: 250,
-          accountFrom: 'Credit Card',
-          transactionName: 'Online Shopping',
-          category: 'Shopping',
-          type: 'expense',
-          currency: 'USD'
-        },
-        {
-          date: '2024-09-05',
-          amount: 75,
-          accountFrom: 'Checking',
-          transactionName: 'Restaurant',
-          category: 'Food',
-          type: 'expense',
-          currency: 'USD'
-        },
-        {
-          date: '2023-10-06',
-          amount: 1000,
-          accountFrom: 'Checking',
-          transactionName: 'Freelance Income',
-          category: 'Freelance',
-          type: 'income',
-          currency: 'USD'
-        },
-        {
-          date: '2024-10-07',
-          amount: 120,
-          accountFrom: 'Checking',
-          transactionName: 'Gas',
-          category: 'Transportation',
-          type: 'expense',
-          currency: 'USD'
-        },
-        {
-          date: '2023-08-09',
-          amount: 30,
-          accountFrom: 'Checking',
-          transactionName: 'Bus Pass',
-          category: 'Transportation',
-          type: 'expense',
-          currency: 'USD'
-        },
-        {
-          date: '2023-09-09',
-          amount: 200,
-          accountFrom: 'Savings',
-          accountTo: 'Checking',
-          transactionName: 'Emergency Transfer',
-          category: 'Transfer',
-          type: 'transfer',
-          currency: 'USD'
-        },
-        {
-          date: '2023-02-10',
-          amount: 45,
-          accountFrom: 'Checking',
-          transactionName: 'Movie Tickets',
-          category: 'Entertainment',
-          type: 'expense',
-          currency: 'USD'
-        },
-        {
-          date: '2023-01-11',
-          amount: 3000,
-          accountFrom: 'Checking',
-          transactionName: 'Bonus',
-          category: 'Salary',
-          type: 'income',
-          currency: 'USD'
-        },
-        {
-          date: '2023-09-12',
-          amount: 60,
-          accountFrom: 'Checking',
-          transactionName: 'Utility Bill',
-          category: 'Bills',
-          type: 'expense',
-          currency: 'USD'
-        },
-        {
-          date: '2023-01-13',
-          amount: 150,
-          accountFrom: 'Credit Card',
-          transactionName: 'Clothes',
-          category: 'Shopping',
-          type: 'expense',
-          currency: 'USD'
-        },
-        {
-          date: '2023-01-14',
-          amount: 600,
-          accountFrom: 'Checking',
-          transactionName: 'Rent',
-          category: 'Housing',
-          type: 'expense',
-          currency: 'USD'
-        },
-        {
-          date: '2023-06-15',
-          amount: 100,
-          accountFrom: 'Savings',
-          accountTo: 'Brokerage',
-          transactionName: 'Investing',
-          category: 'Transfer',
-          type: 'transfer',
-          currency: 'USD'
-        },
-        {
-          date: '2023-01-16',
-          amount: 220,
-          accountFrom: 'Checking',
-          transactionName: 'Car Insurance',
-          category: 'Bills',
-          type: 'expense',
-          currency: 'USD'
-        },
-        {
-          date: '2023-01-17',
-          amount: 90,
-          accountFrom: 'Credit Card',
-          transactionName: 'Dining Out',
-          category: 'Food',
-          type: 'expense',
-          currency: 'USD'
-        },
-        {
-          date: '2023-08-18',
-          amount: 400,
-          accountFrom: 'Checking',
-          transactionName: 'Part-Time Work',
-          category: 'Freelance',
-          type: 'income',
-          currency: 'USD'
-        },
-        {
-          date: '2023-01-19',
-          amount: 60,
-          accountFrom: 'Checking',
-          transactionName: 'Gym Membership',
-          category: 'Fitness',
-          type: 'expense',
-          currency: 'USD'
-        },
-        {
-          date: '2023-01-20',
-          amount: 80,
-          accountFrom: 'Checking',
-          transactionName: 'Haircut',
-          category: 'Personal Care',
-          type: 'expense',
-          currency: 'USD'
-        }
-    ];
-    function sortTransactionsByDateDescending(transactions) {
-      return transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+  // Group transactions by month/year from current to oldest
+  function groupTransactionsByMonthFromCurrent(txns) {
+    if (!txns || txns.length === 0) {
+      return [];
     }
+    const oldestTransaction = txns[txns.length - 1];
+    const oldestDate = new Date(oldestTransaction.date);
+    const oldestYear = oldestDate.getFullYear();
+    const oldestMonth = oldestDate.getMonth();
 
-    function groupTransactionsByMonthFromCurrent(transactions) {
-      if (!transactions || transactions.length === 0) {
-        return [];
+    const now = new Date();
+    let currentYear = now.getFullYear();
+    let currentMonth = now.getMonth();
+
+    const results = [];
+    while (
+      currentYear > oldestYear ||
+      (currentYear === oldestYear && currentMonth >= oldestMonth)
+    ) {
+      const monthlyTransactions = txns.filter((tx) => {
+        const txDate = new Date(tx.date);
+        return (
+          txDate.getFullYear() === currentYear && txDate.getMonth() === currentMonth
+        );
+      });
+      results.push({
+        year: currentYear,
+        month: currentMonth,
+        transactions: monthlyTransactions,
+      });
+      currentMonth--;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
       }
-    
-      const oldestTransaction = transactions[transactions.length - 1];
-      const oldestDate = new Date(oldestTransaction.date);
-      const oldestYear = oldestDate.getFullYear();
-      const oldestMonth = oldestDate.getMonth();
-    
-      const now = new Date();
-      let currentYear = now.getFullYear();
-      let currentMonth = now.getMonth();
-    
-      const results = [];
-    
-      while (
-        currentYear > oldestYear ||
-        (currentYear === oldestYear && currentMonth >= oldestMonth)
-      ) {
-        const monthlyTransactions = transactions.filter(tx => {
-          const txDate = new Date(tx.date);
-          return (
-            txDate.getFullYear() === currentYear &&
-            txDate.getMonth() === currentMonth
-          );
-        });
-    
-        results.push({
-          year: currentYear,
-          month: currentMonth,
-          transactions: monthlyTransactions
-        });
-    
-        currentMonth--;
-        if (currentMonth < 0) {
-          currentMonth = 11;
-          currentYear--;
-        }
-      }
-      return results;
     }
+    return results;
+  }
 
-
-  const sortedTransactions = sortTransactionsByDateDescending(dummyTransactions);
+  // Store your transactions in state
+  const [transactions, setTransactions] = useState(dummyTransactions);
+  // Derived data: sorted & grouped
+  const sortedTransactions = sortTransactionsByDateDescending(transactions);
   const transactionsGrouped = groupTransactionsByMonthFromCurrent(sortedTransactions);
+
+  // Manage which month's index is displayed
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const handlePrevious = () => {
     if (currentIndex < transactionsGrouped.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+      setCurrentIndex((prev) => prev + 1);
     }
   };
 
   const handleNext = () => {
     if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
+      setCurrentIndex((prev) => prev - 1);
     }
   };
 
@@ -267,52 +147,62 @@ function Transactions(){
     return date.toLocaleString('default', { month: 'long', year: 'numeric' });
   };
 
-  const [transactions, setTransactions] = useState(dummyTransactions);
+  // Manage the pop-up form (new or edit)
   const [showForm, setShowForm] = useState(false);
   const [editData, setEditData] = useState(null);
 
-  const handleDelete = (index) => {
-    const newList = [...transactions];
-    newList.splice(index, 1);
-    setTransactions(newList);
+  // Delete by ID
+  const handleDelete = (id) => {
+    setTransactions((prev) => prev.filter((txn) => txn.id !== id));
   };
 
-  const handleEdit = (txn, index) => {
-    setEditData({ ...txn, index });
+  // Edit: pass the entire transaction object
+  const handleEdit = (txn) => {
+    setEditData(txn);  // store existing transaction in state
     setShowForm(true);
   };
 
+  // Save: if there's an `id`, it’s an edit; otherwise it's new
   const handleSave = (updatedTxn) => {
-    if (updatedTxn.index != null) {
-      const newList = [...transactions];
-      newList[updatedTxn.index] = updatedTxn;
-      delete updatedTxn.index;
-      setTransactions(newList);
-    } else {
-      setTransactions([...transactions, updatedTxn]);
-    }
+    setTransactions((prev) => {
+      // If updatedTxn has an ID, we replace the old transaction
+      if (updatedTxn.id) {
+        return prev.map((t) => (t.id === updatedTxn.id ? updatedTxn : t));
+      } else {
+        // Otherwise, it's a new transaction -> give it a unique ID
+        const newId = Math.max(0, ...prev.map((p) => p.id)) + 1;
+        return [...prev, { ...updatedTxn, id: newId }];
+      }
+    });
   };
 
-    return (
-      <>
+  return (
+    <>
       <MonthlySwitcher
         displayMonthYear={getMonthYearLabel(currentIndex)}
         onPrevious={handlePrevious}
         onNext={handleNext}
       />
 
-      <button style={{ float: 'right' }} onClick={() => setShowForm(true)}>+</button>
+      <button style={{ float: 'right' }} onClick={() => setShowForm(true)}>
+        +
+      </button>
+
       {showForm && (
         <TransactionInput
-          onClose={() => { setShowForm(false); setEditData(null); }}
+          onClose={() => {
+            setShowForm(false);
+            setEditData(null);
+          }}
           onSave={handleSave}
+          // Pass the transaction data if editing; null if creating new
           initialTransaction={editData}
         />
       )}
 
       <div>
-        {currentMonthTransactions.map((txn, idx) => (
-          <TransactionBox key={idx}>
+        {currentMonthTransactions.map((txn) => (
+          <TransactionBox key={txn.id}>
             <Transaction
               date={txn.date}
               amount={txn.amount}
@@ -322,14 +212,14 @@ function Transactions(){
               category={txn.category}
               type={txn.type}
               currency={txn.currency}
-              onEdit={() => handleEdit(txn, idx)}
-              onDelete={() => handleDelete(idx)}
+              onEdit={() => handleEdit(txn)}
+              onDelete={() => handleDelete(txn.id)}
             />
           </TransactionBox>
         ))}
       </div>
-      </>
-    );
+    </>
+  );
 }
 
 export default Transactions;
