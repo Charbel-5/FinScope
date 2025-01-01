@@ -261,6 +261,11 @@ function Transactions() {
   const sortedTransactions = sortTransactionsByDateDescending(transactions);
   const transactionsGrouped = groupTransactionsByMonthFromCurrent(sortedTransactions);
 
+  const availableMonths = transactionsGrouped.map((g, i) => {
+    const date = new Date(g.year, g.month, 1);
+    return date.toLocaleString('default', { month: 'long', year: 'numeric' });
+  });
+
   // Manage which month's index is displayed
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -274,6 +279,10 @@ function Transactions() {
     if (currentIndex > 0) {
       setCurrentIndex((prev) => prev - 1);
     }
+  };
+
+  const handleSelectMonth = (index) => {
+    setCurrentIndex(index);
   };
 
   const currentGroup = transactionsGrouped[currentIndex] || {};
@@ -322,6 +331,8 @@ function Transactions() {
         displayMonthYear={getMonthYearLabel(currentIndex)}
         onPrevious={handlePrevious}
         onNext={handleNext}
+        availableMonths={availableMonths}
+        onSelectMonth={handleSelectMonth}
       />
 
       <button style={{ float: 'right' }} onClick={() => setShowForm(true)}>
