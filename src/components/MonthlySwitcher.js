@@ -50,4 +50,3 @@ function MonthlySwitcher({
 }
 
 export default MonthlySwitcher;
-// ...existing code...

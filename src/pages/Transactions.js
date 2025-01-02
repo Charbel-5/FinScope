@@ -211,13 +211,16 @@ function Transactions() {
   ];
   
 
+  //--------------------------------------------------------------------------------
+
+  
   // Sort transactions descending by date
   function sortTransactionsByDateDescending(txns) {
     return [...txns].sort((a, b) => new Date(b.date) - new Date(a.date));
   }
 
   // Group transactions by month/year from current to oldest
-  function groupTransactionsByMonthFromCurrent(txns) {
+  function groupTransactionsByMonthFromCurrent (txns) {
     if (!txns || txns.length === 0) {
       return [];
     }
@@ -261,7 +264,12 @@ function Transactions() {
   const sortedTransactions = sortTransactionsByDateDescending(transactions);
   const transactionsGrouped = groupTransactionsByMonthFromCurrent(sortedTransactions);
 
-  const availableMonths = transactionsGrouped.map((g, i) => {
+
+
+
+  //--------------------------------------------------------------------------------
+  // For the MonthlySwitcher component to display the name of the month and year.
+  const availableMonths = transactionsGrouped.map((g) => {
     const date = new Date(g.year, g.month, 1);
     return date.toLocaleString('default', { month: 'long', year: 'numeric' });
   });
@@ -271,13 +279,13 @@ function Transactions() {
 
   const handlePrevious = () => {
     if (currentIndex < transactionsGrouped.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
+      setCurrentIndex(currentIndex + 1);
     }
   };
 
   const handleNext = () => {
     if (currentIndex > 0) {
-      setCurrentIndex((prev) => prev - 1);
+      setCurrentIndex(currentIndex - 1);
     }
   };
 
