@@ -276,9 +276,9 @@ export  function groupTransactionsByMonthFromCurrent (txns) {
 
 //this function when passes the id, it uses the hook and creates an array where it filters out the transaction with the id in question
 //handle delete
-
 // Custom hook
 export function useTransactions() {
+
     const [transactions, setTransactions] = useState(dummyTransactions);
   
     // Sort and group transactions
@@ -315,5 +315,6 @@ export function useTransactions() {
       availableMonths,
       handleSave,
       handleDelete,
+      transactions
     };
   }
