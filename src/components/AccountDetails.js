@@ -3,7 +3,7 @@ import './AccountDetails.css';
 import TransactionBox from './TransactionBox';
 import Transaction from './Transaction';
 import TransactionInput from './TransactionInput.js';
-import { useTransactions } from '../Services/TransactionsData';
+import { useTransactions } from '../context/TransactionsContext';
 
 
 // Helper to filter transactions for a specific account

@@ -3,7 +3,7 @@ import TransactionBox from '../components/TransactionBox';
 import Transaction from '../components/Transaction';
 import MonthlySwitcher from '../components/MonthlySwitcher';
 import TransactionInput from '../components/TransactionInput';
-import { useTransactions } from '../Services/TransactionsData';
+import { useTransactions } from '../context/TransactionsContext';
 
 //const nameofthefile() 
 function Transactions() {
