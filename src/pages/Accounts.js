@@ -1,9 +1,12 @@
 // ...existing code...
+import { useState } from 'react';
 import { useAccounts } from '../Services/AccountsData';
 import Account from '../components/Account';
+import AccountDetails from '../components/AccountDetails';
 
 function Accounts() {
   const { groupedAccounts, assets, liabilities, total } = useAccounts();
+  const [selectedAccount, setSelectedAccount] = useState(null);
 
   return (
     <>
@@ -45,11 +48,19 @@ function Accounts() {
                 key={acc.id}
                 accountName={acc.accountName}
                 balance={acc.balance}
+                onAccountClick={(name) => setSelectedAccount(name)}
               />
             ))}
           </div>
         ))}
       </div>
+
+      {selectedAccount && (
+        <AccountDetails
+          accountName={selectedAccount}
+          onClose={() => setSelectedAccount(null)}
+        />
+      )}
     </>
   );
 }

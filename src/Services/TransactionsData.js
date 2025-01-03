@@ -17,8 +17,8 @@ export const dummyTransactions = [
       id: 2,
       date: '2025-01-14',
       amount: 50,
-      accountFrom: 'Checking',
-      transactionName: 'Groceries',
+      accountFrom: 'Car Loan',
+      transactionName: 'Car',
       category: 'Food',
       type: 'expense',
       currency: 'USD',
@@ -261,6 +261,8 @@ export  function groupTransactionsByMonthFromCurrent (txns) {
     }
     return results;
   }
+
+
 
 
 //-------------------------------------logic for the monthly switcher---------------
