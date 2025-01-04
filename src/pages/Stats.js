@@ -1,48 +1,49 @@
-import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
+import React, { useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { useTransactions } from '../context/TransactionsContext';
+import { transformMonthTransactionsToDailyData } from '../Services/TransactionsData';
+import MonthlySwitcher from '../components/MonthlySwitcher';
+
+
+function transformAllTransactionsForStockChart(allTransactions) {
+  let running = 0;
+  const sorted = [...allTransactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+  return sorted.map(txn => {
+    if (txn.type === 'income') running += parseFloat(txn.amount);
+    else if (txn.type === 'expense') running -= parseFloat(txn.amount);
+    return { date: txn.date, close: running };
+  });
+}
 
 function Stats() {
-  // Dummy data for a 30-day month.
-  // Each day has an income and an expense.
-  const dailyData = [
-    { date: '01', income: 80, expense: 50 },
-    { date: '02', income: 120, expense: 30 },
-    { date: '03', income: 60, expense: 70 },
-    { date: '04', income: 90, expense: 60 },
-    { date: '05', income: 100, expense: 40 },
-    { date: '06', income: 200, expense: 20 },
-    { date: '07', income: 50, expense: 85 },
-    { date: '08', income: 140, expense: 60 },
-    { date: '09', income: 180, expense: 40 },
-    { date: '10', income: 80, expense: 70 },
-    { date: '11', income: 300, expense: 150 },
-    { date: '12', income: 100, expense: 100 },
-    { date: '13', income: 130, expense: 55 },
-    { date: '14', income: 90, expense: 75 },
-    { date: '15', income: 250, expense: 100 },
-    { date: '16', income: 200, expense: 200 },
-    { date: '17', income: 110, expense: 60 },
-    { date: '18', income: 170, expense: 80 },
-    { date: '19', income: 120, expense: 40 },
-    { date: '20', income: 220, expense: 50 },
-    { date: '21', income: 100, expense: 100 },
-    { date: '22', income: 160, expense: 40 },
-    { date: '23', income: 90, expense: 90 },
-    { date: '24', income: 200, expense: 110 },
-    { date: '25', income: 80, expense: 30 },
-    { date: '26', income: 110, expense: 70 },
-    { date: '27', income: 140, expense: 65 },
-    { date: '28', income: 60, expense: 60 },
-    { date: '29', income: 200, expense: 100 },
-    { date: '30', income: 100, expense: 80 },
-  ];
+  const { transactionsGrouped, availableMonths, transactions } = useTransactions();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const stockData = transformAllTransactionsForStockChart(transactions);
+
+
+  // Navigation
+  const handlePrevious = () => {
+    if (currentIndex < transactionsGrouped.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
+  };
+  const handleNext = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+  const handleSelectMonth = (index) => setCurrentIndex(index);
+
+  // Get daily data for the current month
+  const currentGroup = transactionsGrouped[currentIndex] || {};
+  const dailyData = transformMonthTransactionsToDailyData(currentGroup.transactions || []);
 
   // Calculate totals
   const totalIncome = dailyData.reduce((sum, d) => sum + d.income, 0);
   const totalExpense = dailyData.reduce((sum, d) => sum + d.expense, 0);
   const netBalance = totalIncome - totalExpense;
 
-  // Data for the pie chart
+  // Prepare pie chart data
   const pieData = [
     { name: 'Total Income', value: totalIncome },
     { name: 'Total Expense', value: totalExpense },
@@ -51,6 +52,16 @@ function Stats() {
 
   return (
     <div style={{ padding: '20px' }}>
+      <MonthlySwitcher
+        displayMonthYear={
+          availableMonths[currentIndex] || ''
+        }
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        availableMonths={availableMonths}
+        onSelectMonth={handleSelectMonth}
+      />
+
       <h2>Stats</h2>
       <p>Total Income: {totalIncome}</p>
       <p>Total Expense: {totalExpense}</p>
@@ -69,22 +80,23 @@ function Stats() {
 
       <h3>Totals (Pie Chart)</h3>
       <PieChart width={400} height={300}>
-        <Pie
-          data={pieData}
-          dataKey="value"
-          nameKey="name"
-          cx="50%"
-          cy="50%"
-          outerRadius={80}
-          fill="#8884d8"
-          label
-        >
+        <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
           {pieData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index]} />
+            <Cell key={index} fill={COLORS[index]} />
           ))}
         </Pie>
         <Tooltip />
       </PieChart>
+
+      <h3>Line Chart</h3>
+      <LineChart width={600} height={300} data={stockData} margin={{ top: 30, right: 30, left: 0, bottom: 10 }}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="date" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Line type="monotone" dataKey="close" stroke="#82ca9d" />
+      </LineChart>
     </div>
   );
 }

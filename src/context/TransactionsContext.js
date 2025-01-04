@@ -18,6 +18,7 @@ function useTransactionsLogic() {
 
   const handleSave = (updatedTxn) => {
     setTransactions((prev) => {
+      updatedTxn.amount = parseFloat(updatedTxn.amount);
       if (updatedTxn.id) {
         // Edit existing
         return prev.map((t) => (t.id === updatedTxn.id ? updatedTxn : t));

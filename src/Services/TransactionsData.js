@@ -263,6 +263,27 @@ export  function groupTransactionsByMonthFromCurrent (txns) {
   }
 
 
+export function transformMonthTransactionsToDailyData(transactions) {
+  const dailyMap = {};
+
+  transactions.forEach(txn => {
+    const day = new Date(txn.date).getDate();
+    if (!dailyMap[day]) {
+      // zero income/expense for each new day
+      dailyMap[day] = { date: String(day).padStart(2, '0'), income: 0, expense: 0 };
+    }
+    if (txn.type === 'income') {
+      dailyMap[day].income += txn.amount;
+    } else if (txn.type === 'expense') {
+      dailyMap[day].expense += txn.amount;
+    }
+  });
+
+  // Return sorted by day ascending
+  return Object.values(dailyMap).sort((a, b) => parseInt(a.date) - parseInt(b.date));
+}
+
+
 
 
 //-------------------------------------logic for the monthly switcher---------------
