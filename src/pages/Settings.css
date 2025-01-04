@@ -1,0 +1,40 @@
+.settings-container {
+    max-width: 600px;
+    margin: 20px auto;
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 20px;
+  }
+  
+  .settings-container h2 {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .settings-group {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .settings-group label {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .settings-group input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  button {
+    align-self: flex-end;
+    padding: 8px 16px;
+    cursor: pointer;
+  }
