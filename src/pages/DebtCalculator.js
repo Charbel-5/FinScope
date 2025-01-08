@@ -1,17 +1,21 @@
-// ...existing code...
 import React, { useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS } from 'chart.js/auto';
- 
+import './DebtCalculator.css';
+
 function DebtCalculator() {
   const [interestRate, setInterestRate] = useState('');
   const [principal, setPrincipal] = useState('');
   const [periods, setPeriods] = useState('');
-  const [interval, setInterval] = useState('');
   const [payment, setPayment] = useState(0);
   const [chartData, setChartData] = useState({});
- 
-  const calculatePayment = () => {
+
+  const [nominalRate, setNominalRate] = useState('');
+  const [compoundingFrequency, setCompoundingFrequency] = useState('daily');
+  const [customFrequency, setCustomFrequency] = useState('');
+  const [effectiveRate, setEffectiveRate] = useState(0);
+
+  const calculateDebtPayment = () => {
     const r = parseFloat(interestRate) / 100;
     const n = parseInt(periods, 10);
     if (r > 0 && n > 0) {
@@ -20,7 +24,7 @@ function DebtCalculator() {
       buildChartData(pmt);
     }
   };
- 
+
   const buildChartData = (pmt) => {
     const dataPoints = [];
     let remaining = parseFloat(principal);
@@ -41,39 +45,108 @@ function DebtCalculator() {
       ]
     });
   };
- 
+
+  const computeEffectiveRate = () => {
+    const annualNominal = parseFloat(nominalRate) / 100;
+    let freq = 0;
+    switch (compoundingFrequency) {
+      case 'daily':
+        freq = 365;
+        break;
+      case 'weekly':
+        freq = 52;
+        break;
+      case 'monthly':
+        freq = 12;
+        break;
+      case 'quarterly':
+        freq = 4;
+        break;
+      case 'custom':
+        freq = parseFloat(customFrequency) || 1;
+        break;
+      default:
+        freq = 1;
+    }
+    if (annualNominal > 0 && freq > 0) {
+      const effRate = Math.pow(annualNominal + 1, 1 / freq) - 1;
+      setEffectiveRate((effRate * 100).toFixed(5));
+    }
+  };
+
   return (
     <div>
-      <h2>Debt Calculator</h2>
-      <div>
-        <label>Interest Rate (%): </label>
-        <input
-          type="number"
-          value={interestRate}
-          onChange={(e) => setInterestRate(e.target.value)}
-        />
+      <div className="calculator-container">
+        <div className="debt-calculator">
+          <h2>Debt Calculator</h2>
+          <div>
+            <label>Annual Interest Rate (%): </label>
+            <input
+              type="number"
+              value={interestRate}
+              onChange={(e) => setInterestRate(e.target.value)}
+            />
+          </div>
+          <div>
+            <label>Principal: </label>
+            <input
+              type="number"
+              value={principal}
+              onChange={(e) => setPrincipal(e.target.value)}
+            />
+          </div>
+          <div>
+            <label>Total Payments: </label>
+            <input
+              type="number"
+              value={periods}
+              onChange={(e) => setPeriods(e.target.value)}
+            />
+          </div>
+          <button onClick={calculateDebtPayment}>Compute Payment</button>
+          <h3>Periodic Payment: {payment}</h3>
+        </div>
+        <div className="rate-calculator">
+          <h3>Effective Interest Rate Calculator</h3>
+          <div>
+            <label>Nominal Annual Rate (%): </label>
+            <input
+              type="number"
+              value={nominalRate}
+              onChange={(e) => setNominalRate(e.target.value)}
+            />
+          </div>
+          <div>
+            <label>Compounding Frequency:</label>
+            <select
+              value={compoundingFrequency}
+              onChange={(e) => setCompoundingFrequency(e.target.value)}
+            >
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="custom">Custom</option>
+            </select>
+            {compoundingFrequency === 'custom' && (
+              <input
+                type="number"
+                placeholder="Times per year"
+                value={customFrequency}
+                onChange={(e) => setCustomFrequency(e.target.value)}
+              />
+            )}
+          </div>
+          <button onClick={computeEffectiveRate}>Compute Effective Rate</button>
+          <h4>Effective Rate: {effectiveRate}%</h4>
+        </div> 
       </div>
-      <div>
-        <label>Amount to Cover: </label>
-        <input
-          type="number"
-          value={principal}
-          onChange={(e) => setPrincipal(e.target.value)}
-        />
+      <div className="chart-container">
+        {chartData.labels && <Line data={chartData} />}
       </div>
-      <div>
-        <label>Number of Payments: </label>
-        <input
-          type="number"
-          value={periods}
-          onChange={(e) => setPeriods(e.target.value)}
-        />
-      </div>
-      <button onClick={calculatePayment}>Compute Payment</button>
-      <h3>Periodic Payment: {payment}</h3>
-      {chartData.labels && <Line data={chartData} />}
     </div>
+   
   );
 }
- 
+
 export default DebtCalculator;

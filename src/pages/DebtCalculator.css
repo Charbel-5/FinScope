@@ -1,0 +1,12 @@
+.calculator-container {
+    display: flex;
+    gap: 2rem;
+  }
+  .debt-calculator,
+  .rate-calculator {
+    flex: 1;
+  }
+
+  .chart-container {
+    width: 100%;
+  }
