@@ -34,7 +34,7 @@ function MonthlySwitcher({
     <>
       <div className="monthly-switcher"> 
         <button onClick={onPrevious}>&lt;</button>
-        <span onClick={handleMonthClick} style={{ cursor: 'pointer' }}>
+        <span className='month-day-showcaser' onClick={handleMonthClick} style={{ cursor: 'pointer' }}>
           {displayMonthYear}
         </span>
         <button onClick={onNext}>&gt;</button>

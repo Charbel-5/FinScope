@@ -4,6 +4,7 @@ import Transaction from '../components/Transaction';
 import MonthlySwitcher from '../components/MonthlySwitcher';
 import TransactionInput from '../components/TransactionInput';
 import { useTransactions } from '../context/TransactionsContext';
+import './Transactions.css';
 
 //const nameofthefile() 
 function Transactions() {
@@ -90,7 +91,7 @@ function Transactions() {
         //the button besides this is just the add button, and onclick it just showcases the form using the hook
       />
 
-      <button style={{ float: 'right' }} onClick={() => setShowForm(true)}>
+      <button className="add-transaction-button" onClick={() => setShowForm(true)}>
         +
       </button>
 
