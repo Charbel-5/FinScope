@@ -60,3 +60,27 @@
   display: flex;
   opacity: 1;
 }
+
+.transaction .amount.income {
+  color: #61ef61;
+}
+
+.transaction .amount.expense {
+  color: #f06969;
+}
+
+.transaction .amount.transfer {
+  color: #52c8f0;
+}
+
+.transaction .type.income {
+  color: #61ef61;
+}
+
+.transaction .type.expense {
+  color: #f06969;
+}
+
+.transaction .type.transfer {
+  color: #52c8f0;
+}

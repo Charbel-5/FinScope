@@ -17,7 +17,7 @@ function Transaction({
       <div className="transaction-details">
         <div className="transaction-name">{transactionName}</div>
         <div className="transaction-meta">
-          <span>{date}</span> | <span>{type}</span>
+          <span>{date}</span> | <span className={`type ${type}`}>{type}</span>
         </div>
         {type === 'transfer' && (
           <div className="transaction-accounts">
@@ -31,7 +31,7 @@ function Transaction({
           </div>
         )}
       </div>
-      <div className="transaction-amount">
+      <div className={`transaction-amount amount ${type}`}>
         {amount} {currency}
       </div>
 
@@ -39,7 +39,6 @@ function Transaction({
         <button onClick={onEdit}>Edit</button>
         <button onClick={onDelete}>Delete</button>
       </div>
-
     </div>
   );
 }
