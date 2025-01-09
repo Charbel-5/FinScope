@@ -28,6 +28,13 @@
 
 .topnav .logout {
     float: right;
+    /*background-color: red;*/
+    color: white;
+}
+
+.topnav .logout:hover {
+    background-color: black;
+    color: white;
 }
 
 .dropdown {
@@ -66,15 +73,6 @@
     text-align: left;
 }
 
-.dropdown-content a:hover {
-    background-color: #ddd;
-}
-
 .dropdown:hover .dropdown-content {
     display: block;
-}
-
-.dropdown:hover .dropbtn {
-    background-color: #ddd;
-    color: black;
 }
