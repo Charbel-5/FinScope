@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, 
 import { useTransactions } from '../context/TransactionsContext';
 import { transformMonthTransactionsToDailyData } from '../Services/TransactionsData';
 import MonthlySwitcher from '../components/MonthlySwitcher';
+import './Stats.css';
 
 
 function transformAllTransactionsForStockChart(allTransactions) {
@@ -51,7 +52,7 @@ function Stats() {
   const COLORS = ['#00C49F', '#FF8042'];
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div>
       <MonthlySwitcher
         displayMonthYear={
           availableMonths[currentIndex] || ''
@@ -62,22 +63,24 @@ function Stats() {
         onSelectMonth={handleSelectMonth}
       />
 
-      <h2>Stats</h2>
-      <p>Total Income: {totalIncome}</p>
-      <p>Total Expense: {totalExpense}</p>
-      <p>Net Balance: {netBalance}</p>
+    <div className='spacer'>
+      <div className='statistics'>
+        <div className='stats-income'>Monthly Income: {totalIncome}</div>
+        <div className='stats-expense'>Monthly Expense: {totalExpense}</div>
+        <div className={`${ netBalance > 0 ? 'stats-income' : 'stats-expense'}`}>Net Balance: {netBalance}</div>
+      </div>
+      
+    </div>
+    
+    
+    <div className='stats-page spacer'>
 
-      <h3>Daily Income/Expense (Bar Chart)</h3>
-      <BarChart width={600} height={300} data={dailyData} margin={{ top: 30 }}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="date" label={{ value: 'Day', position: 'insideBottom' }} />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Bar dataKey="income" fill="#82ca9d" />
-        <Bar dataKey="expense" fill="#8884d8" />
-      </BarChart>
 
+    <div>
+
+
+
+    <div>
       <h3>Totals (Pie Chart)</h3>
       <PieChart width={400} height={300}>
         <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
@@ -87,17 +90,44 @@ function Stats() {
         </Pie>
         <Tooltip />
       </PieChart>
-
-      <h3>Line Chart</h3>
-      <LineChart width={600} height={300} data={stockData} margin={{ top: 30, right: 30, left: 0, bottom: 10 }}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="date" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Line type="monotone" dataKey="close" stroke="#82ca9d" />
-      </LineChart>
     </div>
+
+    </div>
+        
+          
+
+          <div>
+            <h3>Daily Income/Expense (Bar Chart)</h3>
+            <BarChart width={600} height={300} data={dailyData} margin={{ top: 30 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" label={{ value: 'Day', position: 'insideBottom' }} />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="income" fill="#82ca9d" />
+              <Bar dataKey="expense" fill="#8884d8" />
+            </BarChart>
+          </div>
+
+      
+     
+
+      <div className='spacer line-chart'>
+        <h3>Line Chart</h3>
+        <LineChart width={600} height={300} data={stockData} margin={{ top: 30, right: 30, left: 0, bottom: 10 }}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="date" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Line type="monotone" dataKey="close" stroke="#82ca9d" />
+        </LineChart>
+      </div>
+    </div>
+      
+  </div>
+
+      
   );
 }
 

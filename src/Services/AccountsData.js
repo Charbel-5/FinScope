@@ -1,8 +1,8 @@
 // ...existing code...
 export const dummyAccounts = [
-    { id: 1, accountName: 'Checking', accountType: 'Cash', balance: 1200 },
+    { id: 1, accountName: 'Checking', accountType: 'Cash', balance: 120 },
     { id: 2, accountName: 'Credit Card', accountType: 'Credit Card', balance: -300 },
-    { id: 4, accountName: 'Savings', accountType: 'Debit Card', balance: 3000 },
+    { id: 4, accountName: 'Savings', accountType: 'Debit Card', balance: 30000 },
     { id: 5, accountName: 'Car Loan', accountType: 'Loan', balance: -5000 },
   ];
   

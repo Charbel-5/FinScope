@@ -15,11 +15,10 @@
     background-color: #eaeaea;
     transform: scale(1.02);
   }
-  
-  .account-name {
-    font-weight: bold;
+
+  .account-titles {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
   }
   
-  .account-balance {
-    color: #444;
-  }

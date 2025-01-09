@@ -1,0 +1,52 @@
+.stats-page {
+    padding: 20px;
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping */
+    gap: 20px; /* Add some space between the divs */
+}
+
+.stats-page > div {
+    flex: 1 1 calc(50% - 20px); /* Each div takes up 50% of the width minus the gap */
+    box-sizing: border-box; /* Ensure padding and border are included in the width */
+}
+
+
+.statistics{
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    width: 50%;
+    margin-left:25%;
+}
+
+.spacer{
+    margin-top: 50px;
+}
+
+.stats-income{
+    color: #61ef61;
+}
+
+.stats-expense{
+    color: #f06969;
+}
+
+.line-chart{
+    margin-left: 25%;
+    margin-right: 25%;
+    width: 50%;
+}
+
+@media (max-width: 900px) {
+    .stats-page > div {
+        flex: 1 1 100%; /* Each div takes up 100% of the width on smaller screens */
+    }
+    .line-chart{
+        margin-left: 0%;
+        margin-right: 0%;
+    }
+    .statistics{
+        width: 100%;
+        margin-left:0%;
+    }
+}

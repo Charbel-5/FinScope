@@ -1,11 +1,14 @@
-// ...existing code...
+import './Account.css';
+
 function Account({ accountName, balance, onAccountClick }) {
-    return (
-      <div className="account-row" onClick={() => onAccountClick(accountName)}>
-        <span className="account-name">{accountName}</span>
-        <span className="account-balance">{balance}</span>
+  return (
+    <div className="account-row" onClick={() => onAccountClick(accountName)}>
+      <div className="account-titles">
+        <span>{accountName}</span>
+        <span>{balance}</span>
       </div>
-    );
-  }
-  
-  export default Account;
+    </div>
+  );
+}
+
+export default Account;
