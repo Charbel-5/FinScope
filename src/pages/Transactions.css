@@ -17,6 +17,7 @@
     transition: background-color 0.3s;
   }
   
+  
   .add-transaction-button:hover {
     background-color: #0b5ed7;
   }

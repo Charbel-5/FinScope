@@ -25,10 +25,18 @@
 
 .stats-income{
     color: #61ef61;
+    border-style: solid;
+    border-color: black;
+    border-radius: 5px;
+    padding: 10px;
 }
 
 .stats-expense{
     color: #f06969;
+    border-style: solid;
+    border-color: black;
+    border-radius: 5px;
+    padding: 10px;
 }
 
 .line-chart{

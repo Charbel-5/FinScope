@@ -77,68 +77,99 @@ function DebtCalculator() {
   return (
     <div>
       <div className="calculator-container">
+
         <div className="debt-calculator">
-          <h2>Debt Calculator</h2>
-          <div>
-            <label>Annual Interest Rate (%): </label>
-            <input
+        <h2>Debt Calculator</h2>
+          <table>
+            <tr>
+              <td><label>Annual Interest Rate (%): </label></td>
+              <td> 
+                <input
               type="number"
               value={interestRate}
               onChange={(e) => setInterestRate(e.target.value)}
-            />
-          </div>
-          <div>
-            <label>Principal: </label>
-            <input
-              type="number"
-              value={principal}
-              onChange={(e) => setPrincipal(e.target.value)}
-            />
-          </div>
-          <div>
-            <label>Total Payments: </label>
-            <input
-              type="number"
-              value={periods}
-              onChange={(e) => setPeriods(e.target.value)}
-            />
-          </div>
+              />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label>Principal: </label>
+              </td>
+              <td>
+              <input
+                type="number"
+                value={principal}
+                onChange={(e) => setPrincipal(e.target.value)}
+              />
+              </td>
+            </tr>
+            <tr>
+              <td>   
+                <label>Total Payments: </label>
+              </td>
+              <td>
+              <input
+                type="number"
+                value={periods}
+                onChange={(e) => setPeriods(e.target.value)}
+              />
+              </td>
+            </tr>
+          </table>
+
+          
+        
           <button onClick={calculateDebtPayment}>Compute Payment</button>
           <h3>Periodic Payment: {payment}</h3>
         </div>
+
+
+
         <div className="rate-calculator">
-          <h3>Effective Interest Rate Calculator</h3>
-          <div>
-            <label>Nominal Annual Rate (%): </label>
-            <input
-              type="number"
-              value={nominalRate}
-              onChange={(e) => setNominalRate(e.target.value)}
-            />
-          </div>
-          <div>
-            <label>Compounding Frequency:</label>
-            <select
-              value={compoundingFrequency}
-              onChange={(e) => setCompoundingFrequency(e.target.value)}
-            >
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-              <option value="quarterly">Quarterly</option>
-              <option value="custom">Custom</option>
-            </select>
-            {compoundingFrequency === 'custom' && (
+        <h2>Effective Interest Rate Calculator</h2>
+        <table>
+            <tr>
+              <td>
+                <label>Nominal Annual Rate (%): </label>
+              </td>
+              <td>
               <input
                 type="number"
-                placeholder="Times per year"
-                value={customFrequency}
-                onChange={(e) => setCustomFrequency(e.target.value)}
+                value={nominalRate}
+                onChange={(e) => setNominalRate(e.target.value)}
               />
-            )}
-          </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label>Compounding Frequency:</label>
+              </td>
+              <td>
+
+              <select
+                value={compoundingFrequency}
+                onChange={(e) => setCompoundingFrequency(e.target.value)}
+              >
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="custom">Custom</option>
+              </select>
+              {compoundingFrequency === 'custom' && (
+                <input
+                  type="number"
+                  placeholder="Times per year"
+                  value={customFrequency}
+                  onChange={(e) => setCustomFrequency(e.target.value)}
+                />
+              )}
+              </td>
+            </tr>
+        </table>
+
           <button onClick={computeEffectiveRate}>Compute Effective Rate</button>
-          <h4>Effective Rate: {effectiveRate}%</h4>
+          <h3>Effective Rate: {effectiveRate}%</h3>
         </div> 
       </div>
       <div className="chart-container">
