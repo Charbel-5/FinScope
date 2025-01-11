@@ -3,14 +3,20 @@ import React, { useState } from 'react';
 import { useStocks } from '../context/StocksContext';
 import './AddStockForm.css';
 
-function AddStockForm({ onClose }) {
+function AddStockForm({ onClose, initialTicker, initialQuantity, onEditStock }) {
   const { addStock } = useStocks();
-  const [ticker, setTicker] = useState('');
-  const [quantity, setQuantity] = useState('');
+  const [ticker, setTicker] = useState(initialTicker || '');
+  const [quantity, setQuantity] = useState(initialQuantity || '');
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (ticker && quantity) {
+    if (!ticker || !quantity) return;
+    
+    if (initialTicker) {
+      // Editing existing
+      onEditStock(initialTicker, ticker.trim().toUpperCase(), quantity);
+    } else {
+      // Adding new
       addStock(ticker.trim().toUpperCase(), quantity);
     }
     onClose();
@@ -31,8 +37,13 @@ function AddStockForm({ onClose }) {
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
           />
-          <button type="submit">Add Stock</button>
-          <button type="button" onClick={onClose}>Cancel</button>
+          <div>
+            <button type="submit">Add Stock</button>
+          </div>
+          <div>
+            <button type="button" onClick={onClose}>Cancel</button>
+          </div>
+          
         </form>
       </div>
     </div>

@@ -38,6 +38,18 @@ function StocksProvider({ children }) {
     setStockHoldings((prev) => [...prev, { ticker, quantity: parseFloat(quantity) }]);
   }
 
+  function editStock(oldTicker, newTicker, newQuantity) {
+    setStockHoldings((prev) => 
+      prev.map((s) => 
+        s.ticker === oldTicker ? { ticker: newTicker, quantity: parseFloat(newQuantity) } : s
+      )
+    );
+  }
+  
+  function deleteStock(ticker) {
+    setStockHoldings((prev) => prev.filter((s) => s.ticker !== ticker));
+  }
+
   return (
     <StocksContext.Provider
       value={{
@@ -46,6 +58,8 @@ function StocksProvider({ children }) {
         mapHoldingsToPrices,
         getTotalValue,
         addStock,
+        editStock,
+        deleteStock,
       }}
     >
       {children}
