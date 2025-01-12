@@ -170,16 +170,25 @@ CREATE TABLE ACCOUNT_TYPE (
     CONSTRAINT pk_account_type PRIMARY KEY (account_type_id)
 );
 
-CREATE TABLE TRANSACTION_CATEGORY (
-    transaction_category_id   NUMBER(10) NOT NULL,
-    transaction_category_de   VARCHAR2(200) NOT NULL,
-    CONSTRAINT pk_txn_category PRIMARY KEY (transaction_category_id)
-);
 
 CREATE TABLE TRANSACTION_TYPE (
     transaction_type_id          NUMBER(10) NOT NULL,
     transaction_type_description VARCHAR2(200) NOT NULL,
     CONSTRAINT pk_txn_type PRIMARY KEY (transaction_type_id)
+);
+
+CREATE TABLE TRANSACTION_CATEGORY (
+    transaction_category_id   NUMBER(10) NOT NULL,
+    transaction_category_de   VARCHAR2(200) NOT NULL,
+    user_id                   NUMBER(10) NOT NULL,
+    transaction_type_id       NUMBER(10) NOT NULL,
+    CONSTRAINT pk_txn_category PRIMARY KEY (transaction_category_id),
+    CONSTRAINT fk_trans_cat_user
+      FOREIGN KEY (user_id)
+      REFERENCES USERS (user_id),
+    CONSTRAINT fk_txn_cat_type
+      FOREIGN KEY (transaction_type_id)
+      REFERENCES TRANSACTION_TYPE (transaction_type_id)
 );
 
 -- ===========================================================
@@ -246,7 +255,7 @@ CREATE TABLE CURRENCY_RATE (
 CREATE TABLE TRANSACTION (
     transaction_id            NUMBER(10) NOT NULL,
     transaction_date          DATE NOT NULL,
-    transaction_amount        NUMBER(15,2) NOT NULL,
+    transaction_amount        NUMBER(15,5) NOT NULL,
     transaction_name          VARCHAR2(200) NOT NULL,
     transaction_category_id   NUMBER(10),
     transaction_type_id       NUMBER(10) NOT NULL,
