@@ -46,6 +46,8 @@ END;
 
 /
 
+PURGE RECYCLEBIN;
+
 -- ===========================================================
 
 -- 2) Create parent tables first
@@ -124,62 +126,7 @@ CREATE TABLE TRANSACTION_TYPE (
 
 -- ===========================================================
  
-CREATE TABLE ACCOUNT (
 
-    account_id      NUMBER(10) NOT NULL,
-
-    name            VARCHAR2(200) NOT NULL,
-
-    total_amount    NUMBER(15,5) NOT NULL,
-
-    account_type_id NUMBER(10) NOT NULL,
-    
-    user_id         NUMBER(10) NOT NULL,
-
-    currency_setting_id NUMBER(10) NOT NULL,
-
-    CONSTRAINT pk_account PRIMARY KEY (account_id),
-
-    CONSTRAINT fk_acct_accttype 
-
-       FOREIGN KEY (account_type_id)
-
-       REFERENCES ACCOUNT_TYPE (account_type_id)
-
-    CONSTRAINT fk_usr 
-
-       FOREIGN KEY (user_id)
-
-       REFERENCES USERS (user_id)
-
-    CONSTRAINT fk_curr_sett
-
-       FOREIGN KEY (currency_setting_id)
-
-       REFERENCES CURRENCY_SETTING (currency_setting_id)
-
-);
- 
-CREATE TABLE USER_STOCKS (
-
-    stock_id      NUMBER(10) NOT NULL,
-
-    stock_ticker  VARCHAR2(20) NOT NULL,
-
-    stock_amount  NUMBER(15,4) NOT NULL,
-
-    user_id       NUMBER(10) NOT NULL,
-
-    CONSTRAINT pk_user_stocks PRIMARY KEY (stock_id),
-
-    CONSTRAINT fk_usrstocks_user
-
-       FOREIGN KEY (user_id)
-
-       REFERENCES USERS (user_id)
-
-);
- 
 CREATE TABLE CURRENCY_SETTING (
 
     currency_setting_id     NUMBER(10) NOT NULL,
@@ -213,6 +160,64 @@ CREATE TABLE CURRENCY_SETTING (
        REFERENCES CURRENCY_SETTING_TYPE (currency_setting_type_id)
 
 );
+
+
+CREATE TABLE ACCOUNT (
+
+    account_id       NUMBER(10) NOT NULL,
+
+    account_name             VARCHAR2(200) NOT NULL,
+
+    total_amount     NUMBER(15,5) NOT NULL,
+
+    account_type_id  NUMBER(10) NOT NULL,
+    
+    user_id          NUMBER(10) NOT NULL,
+
+    currency_setting_id NUMBER(10) NOT NULL,
+
+    CONSTRAINT pk_account PRIMARY KEY (account_id),
+
+    CONSTRAINT fk_acct_accttype 
+
+       FOREIGN KEY (account_type_id)
+
+       REFERENCES ACCOUNT_TYPE (account_type_id),
+
+    CONSTRAINT fk_user 
+
+       FOREIGN KEY (user_id)
+
+       REFERENCES USERS (user_id),
+
+    CONSTRAINT fk_curr_sett
+
+       FOREIGN KEY (currency_setting_id)
+
+       REFERENCES CURRENCY_SETTING (currency_setting_id)
+
+);
+ 
+CREATE TABLE USER_STOCKS (
+
+    stock_id      NUMBER(10) NOT NULL,
+
+    stock_ticker  VARCHAR2(20) NOT NULL,
+
+    stock_amount  NUMBER(15,4) NOT NULL,
+
+    user_id       NUMBER(10) NOT NULL,
+
+    CONSTRAINT pk_user_stocks PRIMARY KEY (stock_id),
+
+    CONSTRAINT fk_usrstocks_user
+
+       FOREIGN KEY (user_id)
+
+       REFERENCES USERS (user_id)
+
+);
+ 
  
 CREATE TABLE CURRENCY_RATE (
 
@@ -240,23 +245,23 @@ CREATE TABLE CURRENCY_RATE (
  
 CREATE TABLE TRANSACTION (
 
-    transaction_id           NUMBER(10) NOT NULL,
+    transaction_id            NUMBER(10) NOT NULL,
 
-    transaction_date         DATE NOT NULL,
+    transaction_date          DATE NOT NULL,
 
-    transaction_amount       NUMBER(15,2) NOT NULL,
+    transaction_amount        NUMBER(15,2) NOT NULL,
 
-    transaction_name         VARCHAR2(200) NOT NULL,
+    transaction_name          VARCHAR2(200) NOT NULL,
 
-    transaction_category_id  NUMBER(10),
+    transaction_category_id   NUMBER(10),
 
-    transaction_type_id      NUMBER(10) NOT NULL,
+    transaction_type_id       NUMBER(10) NOT NULL,
 
-    user_id               NUMBER(10) NOT NULL,   -- "Created By" user
+    user_id                   NUMBER(10) NOT NULL,   -- "Created By" user
 
-    from_account_id          NUMBER(10) NOT NULL,   -- "From" account
+    from_account_id           NUMBER(10) NOT NULL,   -- "From" account
 
-    to_account_id            NUMBER(10),   -- "transfer to" account,
+    to_account_id             NUMBER(10),   -- "transfer to" account,
 
     currency_setting_id       NUMBER(10) NOT NULL,
 
@@ -292,7 +297,7 @@ CREATE TABLE TRANSACTION (
 
        FOREIGN KEY (to_account_id)
 
-       REFERENCES ACCOUNT (account_id)
+       REFERENCES ACCOUNT (account_id),
 
     CONSTRAINT fk_curr_sett_id
 
@@ -335,5 +340,3 @@ END;
 /
 
 */
-
- 
