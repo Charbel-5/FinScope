@@ -2,17 +2,7 @@
 
 START TRANSACTION;
  
--- 1) Insert into CURRENCY_SETTING_TYPE
-
-INSERT INTO currency_setting_type (currency_setting_type_de)
-
-VALUES
-
-    ('Primary Currency'),
-
-    ('Secondary Currency');
- 
--- 2) Insert into ACCOUNT_TYPE
+-- 1) Insert into ACCOUNT_TYPE
 
 INSERT INTO account_type (account_type_description)
 
@@ -26,7 +16,7 @@ VALUES
 
     ('Loan');
  
--- 3) Insert into TRANSACTION_TYPE
+-- 2) Insert into TRANSACTION_TYPE
 
 INSERT INTO transaction_type (transaction_type_description)
 
@@ -38,61 +28,64 @@ VALUES
 
     ('Transfer');
  
--- 4) Insert into USERS
 
-INSERT INTO users (email, password, user_name)
-
-VALUES
-
-    ('system@dummy.com', 'dummyPass', 'System User');
  
--- 5) Insert into TRANSACTION_CATEGORY
+-- 4) Insert into TRANSACTION_CATEGORY
 
 --    Use a subquery to find the user_id for 'system@dummy.com'
 
 --    and hardcode the transaction_type_id values:
 
-INSERT INTO transaction_category (transaction_category_de, user_id, transaction_type_id)
+INSERT INTO transaction_category (
+
+    transaction_category_de,
+
+    user_id,
+
+    transaction_type_id
+
+)
 
 VALUES
 
     -- Income categories (transaction_type_id = 1)
 
-    ('Allowance', (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 1),
+    ('Allowance',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 1),
 
-    ('Salary', (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 1),
+    ('Salary',     (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 1),
 
     ('Petty cash', (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 1),
 
-    ('Bonus', (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 1),
+    ('Bonus',      (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 1),
  
     -- Expense categories (transaction_type_id = 2)
 
-    ('Transport', (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+    ('Transport',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
 
-    ('Food', (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+    ('Food',       (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
 
-    ('Groceries', (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+    ('Groceries',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
 
-    ('Health', (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+    ('Health',     (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
 
-    ('Education', (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+    ('Education',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
 
-    ('Apparel', (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+    ('Apparel',    (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
 
-    ('Household', (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+    ('Household',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
 
-    ('Gift', (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2);
+    ('Gift',       (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2);
  
--- 6) Insert into CURRENCY
-
---    (Large multi-value insert; omit currency_id so AUTO_INCREMENT will handle it)
+-- 5) Insert into CURRENCY
 
 INSERT INTO currency (currency_name, symbol)
 
 VALUES
 
     ('US Dollar', 'USD'),
+
+    ('Lebanese Pound', 'LBP'),
+
 
     ('Euro', 'EUR'),
 
@@ -248,8 +241,6 @@ VALUES
 
     ('Lao Kip', 'LAK'),
 
-    ('Lebanese Pound', 'LBP'),
-
     ('Lesotho Loti', 'LSL'),
 
     ('Liberian Dollar', 'LRD'),
@@ -397,6 +388,14 @@ VALUES
     ('Zimbabwean Dollar', 'ZWL');
  
 -- Commit the entire batch of inserts
+
+-- 3) Insert into USERS
+
+INSERT INTO users (email, password, user_name, primary_currency_id, secondary_currency_id)
+
+VALUES
+
+    ('system@dummy.com', 'dummyPass', 'System User', 1, 2);
 
 COMMIT;
 
