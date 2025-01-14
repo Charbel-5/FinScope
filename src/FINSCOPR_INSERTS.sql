@@ -4,79 +4,6 @@ START TRANSACTION;
  
 -- 1) Insert into ACCOUNT_TYPE
 
-INSERT INTO account_type (account_type_description)
-
-VALUES
-
-    ('Cash'),
-
-    ('Card'),
-
-    ('Savings'),
-
-    ('Loan');
- 
--- 2) Insert into TRANSACTION_TYPE
-
-INSERT INTO transaction_type (transaction_type_description)
-
-VALUES
-
-    ('Income'),
-
-    ('Expense'),
-
-    ('Transfer');
- 
-
- 
--- 4) Insert into TRANSACTION_CATEGORY
-
---    Use a subquery to find the user_id for 'system@dummy.com'
-
---    and hardcode the transaction_type_id values:
-
-INSERT INTO transaction_category (
-
-    transaction_category_de,
-
-    user_id,
-
-    transaction_type_id
-
-)
-
-VALUES
-
-    -- Income categories (transaction_type_id = 1)
-
-    ('Allowance',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 1),
-
-    ('Salary',     (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 1),
-
-    ('Petty cash', (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 1),
-
-    ('Bonus',      (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 1),
- 
-    -- Expense categories (transaction_type_id = 2)
-
-    ('Transport',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
-
-    ('Food',       (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
-
-    ('Groceries',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
-
-    ('Health',     (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
-
-    ('Education',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
-
-    ('Apparel',    (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
-
-    ('Household',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
-
-    ('Gift',       (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2);
- 
--- 5) Insert into CURRENCY
 
 INSERT INTO currency (currency_name, symbol)
 
@@ -355,7 +282,7 @@ VALUES
 
     ('Thai Baht', 'THB'),
 
-    ('Tongan Paʻanga', 'TOP'),
+    ('Tongan Paanga', 'TOP'),
 
     ('Trinidad and Tobago Dollar', 'TTD'),
 
@@ -373,7 +300,7 @@ VALUES
 
     ('Uruguayan Peso', 'UYU'),
 
-    ('Uzbekistani Soʻm', 'UZS'),
+    ('Uzbekistani Som', 'UZS'),
 
     ('Vanuatu Vatu', 'VUV'),
 
@@ -391,12 +318,92 @@ VALUES
 
 -- 3) Insert into USERS
 
+INSERT INTO account_type (account_type_description)
+
+VALUES
+
+    ('Cash'),
+
+    ('Card'),
+
+    ('Savings'),
+
+    ('Loan');
+ 
+-- 2) Insert into TRANSACTION_TYPE
+
+INSERT INTO transaction_type (transaction_type_description)
+
+VALUES
+
+    ('Income'),
+
+    ('Expense'),
+
+    ('Transfer');
+ 
+
+ 
+-- 4) Insert into TRANSACTION_CATEGORY
+
+--    Use a subquery to find the user_id for 'system@dummy.com'
+
+--    and hardcode the transaction_type_id values:
+
 INSERT INTO users (email, password, user_name, primary_currency_id, secondary_currency_id)
 
 VALUES
 
     ('system@dummy.com', 'dummyPass', 'System User', 1, 2);
 
-COMMIT;
+INSERT INTO transaction_category (
+
+    transaction_category_de,
+
+    user_id,
+
+    transaction_type_id
+
+)
+
+
+
+VALUES
+
+    -- Income categories (transaction_type_id = 1)
+
+    ('Allowance',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 1),
+
+    ('Salary',     (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 1),
+
+    ('Petty cash', (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 1),
+
+    ('Bonus',      (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 1),
+ 
+    -- Expense categories (transaction_type_id = 2)
+
+    ('Transport',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+
+    ('Food',       (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+
+    ('Groceries',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+
+    ('Health',     (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+
+    ('Education',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+
+    ('Apparel',    (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+
+    ('Household',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+
+    ('Gift',       (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2);
+
 
  
+-- 5) Insert into CURRENCY
+
+
+
+
+
+COMMIT;

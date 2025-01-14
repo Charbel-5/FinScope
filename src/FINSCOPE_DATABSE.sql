@@ -67,20 +67,24 @@ CREATE TABLE `users` (
     `primary_currency_id`   INT NULL,
 
     `secondary_currency_id` INT NULL,
- 
+
     PRIMARY KEY (`user_id`),
  
     CONSTRAINT `fk_user_primary_currency`
 
       FOREIGN KEY (`primary_currency_id`)
 
-      REFERENCES `currency` (`currency_id`),
+      REFERENCES `currency` (`currency_id`)
+
+      ON DELETE CASCADE,
  
     CONSTRAINT `fk_user_secondary_currency`
 
       FOREIGN KEY (`secondary_currency_id`)
 
       REFERENCES `currency` (`currency_id`)
+
+      ON DELETE CASCADE
 
 ) ENGINE=InnoDB;
  
@@ -120,13 +124,17 @@ CREATE TABLE `transaction_category` (
 
       FOREIGN KEY (`user_id`)
 
-      REFERENCES `users` (`user_id`),
+      REFERENCES `users` (`user_id`)
+
+      ON DELETE CASCADE,
  
     CONSTRAINT `fk_txn_cat_type`
 
       FOREIGN KEY (`transaction_type_id`)
 
       REFERENCES `transaction_type` (`transaction_type_id`)
+
+      ON DELETE CASCADE
 
 ) ENGINE=InnoDB;
  
@@ -154,6 +162,8 @@ CREATE TABLE `currency_rate` (
 
       REFERENCES `users` (`user_id`)
 
+      ON DELETE CASCADE
+
 ) ENGINE=InnoDB;
  
 CREATE TABLE `account` (
@@ -171,26 +181,32 @@ CREATE TABLE `account` (
     -- References currency directly (rather than a separate "currency_setting" table)
 
     `currency_id` INT NOT NULL,
- 
+
     PRIMARY KEY (`account_id`),
  
     CONSTRAINT `fk_acct_accttype`
 
       FOREIGN KEY (`account_type_id`)
 
-      REFERENCES `account_type` (`account_type_id`),
+      REFERENCES `account_type` (`account_type_id`)
+
+      ON DELETE CASCADE,
  
     CONSTRAINT `fk_account_user`
 
       FOREIGN KEY (`user_id`)
 
-      REFERENCES `users` (`user_id`),
+      REFERENCES `users` (`user_id`)
+
+      ON DELETE CASCADE,
  
     CONSTRAINT `fk_account_currency`
 
       FOREIGN KEY (`currency_id`)
 
       REFERENCES `currency` (`currency_id`)
+
+      ON DELETE CASCADE
 
 ) ENGINE=InnoDB;
  
@@ -211,6 +227,8 @@ CREATE TABLE `user_stocks` (
       FOREIGN KEY (`user_id`)
 
       REFERENCES `users` (`user_id`)
+
+      ON DELETE CASCADE
 
 ) ENGINE=InnoDB;
  
@@ -246,30 +264,40 @@ CREATE TABLE `transaction` (
 
       FOREIGN KEY (`transaction_category_id`)
 
-      REFERENCES `transaction_category` (`transaction_category_id`),
+      REFERENCES `transaction_category` (`transaction_category_id`)
+
+      ON DELETE CASCADE,
  
     CONSTRAINT `fk_txn_type`
 
       FOREIGN KEY (`transaction_type_id`)
 
-      REFERENCES `transaction_type` (`transaction_type_id`),
+      REFERENCES `transaction_type` (`transaction_type_id`)
+
+      ON DELETE CASCADE,
  
     CONSTRAINT `fk_txn_user`
 
       FOREIGN KEY (`user_id`)
 
-      REFERENCES `users` (`user_id`),
+      REFERENCES `users` (`user_id`)
+
+      ON DELETE CASCADE,
  
     CONSTRAINT `fk_txn_from_acct`
 
       FOREIGN KEY (`from_account_id`)
 
-      REFERENCES `account` (`account_id`),
+      REFERENCES `account` (`account_id`)
+
+      ON DELETE CASCADE,
  
     CONSTRAINT `fk_txn_to_acct`
 
       FOREIGN KEY (`to_account_id`)
 
       REFERENCES `account` (`account_id`)
+
+      ON DELETE CASCADE
 
 ) ENGINE=InnoDB;
