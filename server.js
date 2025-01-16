@@ -576,7 +576,7 @@ app.listen(PORT, () => {
 // COMPLEX TRANSACTIONS ENDPOINTS
 // ========================================
 
-// 1) Get all transactions of a user (joined text, only transaction_id)
+// 1) Get all transactions of a user (joined text, only transaction_id) VALID
 app.get('/api/complex/transactions/:userId', async (req, res) => {
   const { userId } = req.params;
   try {
@@ -605,68 +605,93 @@ app.get('/api/complex/transactions/:userId', async (req, res) => {
   }
 });
 
-// 2) Edit a transaction by id, using text not IDs
+//Editing the transaction using its id, and texts VALID
 app.put('/api/complex/transaction/:transactionId', async (req, res) => {
   const { transactionId } = req.params;
   const {
     transaction_date,
     transaction_amount,
     transaction_name,
-    transaction_type,
-    transaction_category,
-    from_account,
-    to_account
+    transaction_type,      // e.g. "Expense"
+    transaction_category,  // e.g. "Bonus"
+    from_account,          // e.g. "Bob Savings"
+    to_account             // e.g. null or "Alice Checking"
   } = req.body;
 
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
 
-    // Look up foreign keys from text
-    const [[typeRow]] = await conn.query(
+    // 1) Find the foreign keys based on text values for transaction_type and transaction_category
+    const [[transactionTypeRow]] = await conn.query(
       'SELECT transaction_type_id FROM transaction_type WHERE transaction_type_description = ?',
       [transaction_type]
     );
-    const transaction_type_id = typeRow?.transaction_type_id || null;
 
-    let catQuery = 'SELECT transaction_category_id FROM transaction_category WHERE transaction_category_de = ? AND user_id IN (SELECT user_id FROM transaction WHERE transaction_id = ?)';
-    const [[catRow]] = await conn.query(catQuery, [transaction_category, transactionId]);
-    const transaction_category_id = catRow?.transaction_category_id || null;
+    if (!transactionTypeRow) {
+      throw new Error('Transaction type not found.');
+    }
+    const transaction_type_id = transactionTypeRow.transaction_type_id;
 
-    const [[acctFromRow]] = await conn.query(
-      'SELECT account_id FROM account WHERE name = ? AND user_id IN (SELECT user_id FROM transaction WHERE transaction_id = ?)',
-      [from_account, transactionId]
+    const [[transactionCategoryRow]] = await conn.query(
+      'SELECT transaction_category_id FROM transaction_category WHERE transaction_category_de = ?',
+      [transaction_category]
     );
-    const from_account_id = acctFromRow?.account_id || null;
+
+    let transaction_category_id = null;
+    if (transactionCategoryRow) {
+      transaction_category_id = transactionCategoryRow.transaction_category_id;
+    } else {
+      // If the category doesn't exist, create a new one
+      const [newCategoryResult] = await conn.query(
+        'INSERT INTO transaction_category (transaction_category_de, user_id, transaction_type_id) VALUES (?, ?, ?)',
+        [transaction_category, existingTx.user_id, transaction_type_id]
+      );
+      transaction_category_id = newCategoryResult.insertId;
+    }
+
+    // 2) Find the foreign keys for from_account and to_account based on account name
+    const [[fromAccountRow]] = await conn.query(
+      'SELECT account_id FROM account WHERE name = ?',
+      [from_account]
+    );
+
+    if (!fromAccountRow) {
+      throw new Error('From account not found.');
+    }
+    const from_account_id = fromAccountRow.account_id;
 
     let to_account_id = null;
     if (to_account) {
-      const [[acctToRow]] = await conn.query(
-        'SELECT account_id FROM account WHERE name = ? AND user_id IN (SELECT user_id FROM transaction WHERE transaction_id = ?)',
-        [to_account, transactionId]
+      const [[toAccountRow]] = await conn.query(
+        'SELECT account_id FROM account WHERE name = ?',
+        [to_account]
       );
-      to_account_id = acctToRow?.account_id || null;
+
+      if (!toAccountRow) {
+        throw new Error('To account not found.');
+      }
+      to_account_id = toAccountRow.account_id;
     }
 
-    // Update
-    const updateSql = `
+    // 3) Update the transaction with the new foreign keys and other fields
+    await conn.query(`
       UPDATE transaction
-      SET 
-        transaction_date = ?,
+      SET
+        transaction_date   = ?,
         transaction_amount = ?,
-        transaction_name = ?,
-        transaction_category_id = ?,
+        transaction_name   = ?,
         transaction_type_id = ?,
+        transaction_category_id = ?,
         from_account_id = ?,
         to_account_id = ?
       WHERE transaction_id = ?
-    `;
-    await conn.query(updateSql, [
+    `, [
       transaction_date,
       transaction_amount,
       transaction_name,
-      transaction_category_id,
       transaction_type_id,
+      transaction_category_id,
       from_account_id,
       to_account_id,
       transactionId
@@ -674,16 +699,18 @@ app.put('/api/complex/transaction/:transactionId', async (req, res) => {
 
     await conn.commit();
     res.sendStatus(200);
+
   } catch (err) {
-    await conn.rollback();
     console.error(err);
+    await conn.rollback();
     res.status(500).send('Error editing complex transaction');
   } finally {
     conn.release();
   }
 });
 
-// 3) Delete a transaction by its ID
+
+// 3) Delete a transaction by its ID Valid
 app.delete('/api/complex/transaction/:transactionId', async (req, res) => {
   const { transactionId } = req.params;
   try {
@@ -712,35 +739,87 @@ app.post('/api/complex/transactions', async (req, res) => {
   try {
     await conn.beginTransaction();
 
-    // Resolve foreign keys
+    // Format the date to 'YYYY-MM-DD'
+    const formattedDate = new Date(transaction_date).toISOString().split('T')[0];
+
+    // Resolve transaction_type_id or assign a default
+    let transaction_type_id;
     const [[typeRow]] = await conn.query(
-      'SELECT transaction_type_id FROM transaction_type WHERE transaction_type_description = ?',
-      [transaction_type]
+      'SELECT transaction_type_id FROM transaction_type WHERE transaction_type_description = ? AND (user_id = ? OR user_id = 1)',
+      [transaction_type, user_id]
     );
-    const transaction_type_id = typeRow?.transaction_type_id || null;
-
-    const [[catRow]] = await conn.query(
-      'SELECT transaction_category_id FROM transaction_category WHERE transaction_category_de = ? AND user_id = ?',
-      [transaction_category, user_id]
-    );
-    const transaction_category_id = catRow?.transaction_category_id || null;
-
-    const [[acctFromRow]] = await conn.query(
-      'SELECT account_id FROM account WHERE name = ? AND user_id = ?',
-      [from_account, user_id]
-    );
-    const from_account_id = acctFromRow?.account_id || null;
-
-    let to_account_id = null;
-    if (to_account) {
-      const [[acctToRow]] = await conn.query(
-        'SELECT account_id FROM account WHERE name = ? AND user_id = ?',
-        [to_account, user_id]
+    if (typeRow) {
+      transaction_type_id = typeRow.transaction_type_id;
+    } else {
+      // Insert a default transaction type and use its ID
+      const [newTypeResult] = await conn.query(
+        'INSERT INTO transaction_type (transaction_type_description) VALUES (?)',
+        ['Default Type']
       );
-      to_account_id = acctToRow?.account_id || null;
+      transaction_type_id = newTypeResult.insertId;
     }
 
-    // Insert
+    // Resolve transaction_category_id or assign a default
+    let transaction_category_id;
+    const [[catRow]] = await conn.query(
+      'SELECT transaction_category_id FROM transaction_category WHERE transaction_category_de = ? AND (user_id = ? OR user_id = 1)',
+      [transaction_category, user_id]
+    );
+    if (catRow) {
+      transaction_category_id = catRow.transaction_category_id;
+    } else {
+      // Insert a default transaction category and use its ID
+      const [newCategoryResult] = await conn.query(
+        'INSERT INTO transaction_category (transaction_category_de, user_id, transaction_type_id) VALUES (?, ?, ?)',
+        ['Default Category', user_id, transaction_type_id]
+      );
+      transaction_category_id = newCategoryResult.insertId;
+    }
+
+    // Resolve from_account_id or assign a default
+    let from_account_id;
+    const [[acctFromRow]] = await conn.query(
+      'SELECT account_id FROM account WHERE name = ? AND (user_id = ? OR user_id = 1)',
+      [from_account, user_id]
+    );
+    if (acctFromRow) {
+      from_account_id = acctFromRow.account_id;
+    } else {
+      // Insert a default account and use its ID
+      const [newAccountResult] = await conn.query(
+        'INSERT INTO account (name, total_amount, account_type_id, user_id, currency_id) VALUES (?, ?, ?, ?, ?)',
+        ['Default From Account', 0, 1, user_id, 1] // Default values
+      );
+      from_account_id = newAccountResult.insertId;
+    }
+
+    // Resolve to_account_id or assign a default
+    let to_account_id;
+    if (to_account) {
+      const [[acctToRow]] = await conn.query(
+        'SELECT account_id FROM account WHERE name = ? AND (user_id = ? OR user_id = 1)',
+        [to_account, user_id]
+      );
+      if (acctToRow) {
+        to_account_id = acctToRow.account_id;
+      } else {
+        // Insert a default account and use its ID
+        const [newAccountResult] = await conn.query(
+          'INSERT INTO account (name, total_amount, account_type_id, user_id, currency_id) VALUES (?, ?, ?, ?, ?)',
+          ['Default To Account', 0, 1, user_id, 1] // Default values
+        );
+        to_account_id = newAccountResult.insertId;
+      }
+    } else {
+      // If no to_account is provided, use a default account
+      const [newAccountResult] = await conn.query(
+        'INSERT INTO account (name, total_amount, account_type_id, user_id, currency_id) VALUES (?, ?, ?, ?, ?)',
+        ['Default To Account', 0, 1, user_id, 1]
+      );
+      to_account_id = newAccountResult.insertId;
+    }
+
+    // Insert the new transaction with no NULL values
     const insertSql = `
       INSERT INTO transaction (
         transaction_date,
@@ -754,9 +833,9 @@ app.post('/api/complex/transactions', async (req, res) => {
       ) VALUES (?,?,?,?,?,?,?,?)
     `;
     await conn.query(insertSql, [
-      transaction_date,
-      transaction_amount,
-      transaction_name,
+      formattedDate, // Use the properly formatted date
+      transaction_amount || 0, // Default amount if missing
+      transaction_name || 'Default Transaction', // Default name if missing
       transaction_category_id,
       transaction_type_id,
       user_id,
@@ -774,6 +853,10 @@ app.post('/api/complex/transactions', async (req, res) => {
     conn.release();
   }
 });
+
+
+
+
 
 // ========================================
 // COMPLEX USER/CURRENCY ENDPOINTS
