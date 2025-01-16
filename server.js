@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const pool = require('./src/db'); // Make sure the path is correct
+const pool = require('./src/db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -524,3 +524,399 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ========================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ========================================
+// COMPLEX TRANSACTIONS ENDPOINTS
+// ========================================
+
+// 1) Get all transactions of a user (joined text, only transaction_id)
+app.get('/api/complex/transactions/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const query = `
+      SELECT 
+        t.transaction_id,
+        DATE_FORMAT(t.transaction_date, '%Y-%m-%d') AS transaction_date,
+        t.transaction_amount,
+        t.transaction_name,
+        tt.transaction_type_description AS transaction_type,
+        cat.transaction_category_de AS transaction_category,
+        acctFrom.name AS from_account,
+        acctTo.name AS to_account
+      FROM transaction t
+      LEFT JOIN transaction_type tt ON t.transaction_type_id = tt.transaction_type_id
+      LEFT JOIN transaction_category cat ON t.transaction_category_id = cat.transaction_category_id
+      LEFT JOIN account acctFrom ON t.from_account_id = acctFrom.account_id
+      LEFT JOIN account acctTo ON t.to_account_id = acctTo.account_id
+      WHERE t.user_id = ?
+    `;
+    const [rows] = await pool.query(query, [userId]);
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error retrieving complex transactions');
+  }
+});
+
+// 2) Edit a transaction by id, using text not IDs
+app.put('/api/complex/transaction/:transactionId', async (req, res) => {
+  const { transactionId } = req.params;
+  const {
+    transaction_date,
+    transaction_amount,
+    transaction_name,
+    transaction_type,
+    transaction_category,
+    from_account,
+    to_account
+  } = req.body;
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // Look up foreign keys from text
+    const [[typeRow]] = await conn.query(
+      'SELECT transaction_type_id FROM transaction_type WHERE transaction_type_description = ?',
+      [transaction_type]
+    );
+    const transaction_type_id = typeRow?.transaction_type_id || null;
+
+    let catQuery = 'SELECT transaction_category_id FROM transaction_category WHERE transaction_category_de = ? AND user_id IN (SELECT user_id FROM transaction WHERE transaction_id = ?)';
+    const [[catRow]] = await conn.query(catQuery, [transaction_category, transactionId]);
+    const transaction_category_id = catRow?.transaction_category_id || null;
+
+    const [[acctFromRow]] = await conn.query(
+      'SELECT account_id FROM account WHERE name = ? AND user_id IN (SELECT user_id FROM transaction WHERE transaction_id = ?)',
+      [from_account, transactionId]
+    );
+    const from_account_id = acctFromRow?.account_id || null;
+
+    let to_account_id = null;
+    if (to_account) {
+      const [[acctToRow]] = await conn.query(
+        'SELECT account_id FROM account WHERE name = ? AND user_id IN (SELECT user_id FROM transaction WHERE transaction_id = ?)',
+        [to_account, transactionId]
+      );
+      to_account_id = acctToRow?.account_id || null;
+    }
+
+    // Update
+    const updateSql = `
+      UPDATE transaction
+      SET 
+        transaction_date = ?,
+        transaction_amount = ?,
+        transaction_name = ?,
+        transaction_category_id = ?,
+        transaction_type_id = ?,
+        from_account_id = ?,
+        to_account_id = ?
+      WHERE transaction_id = ?
+    `;
+    await conn.query(updateSql, [
+      transaction_date,
+      transaction_amount,
+      transaction_name,
+      transaction_category_id,
+      transaction_type_id,
+      from_account_id,
+      to_account_id,
+      transactionId
+    ]);
+
+    await conn.commit();
+    res.sendStatus(200);
+  } catch (err) {
+    await conn.rollback();
+    console.error(err);
+    res.status(500).send('Error editing complex transaction');
+  } finally {
+    conn.release();
+  }
+});
+
+// 3) Delete a transaction by its ID
+app.delete('/api/complex/transaction/:transactionId', async (req, res) => {
+  const { transactionId } = req.params;
+  try {
+    await pool.query('DELETE FROM transaction WHERE transaction_id = ?', [transactionId]);
+    res.sendStatus(200);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error deleting complex transaction');
+  }
+});
+
+// 4) Add a transaction given userId + text attributes
+app.post('/api/complex/transactions', async (req, res) => {
+  const {
+    user_id,
+    transaction_date,
+    transaction_amount,
+    transaction_name,
+    transaction_type,
+    transaction_category,
+    from_account,
+    to_account
+  } = req.body;
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // Resolve foreign keys
+    const [[typeRow]] = await conn.query(
+      'SELECT transaction_type_id FROM transaction_type WHERE transaction_type_description = ?',
+      [transaction_type]
+    );
+    const transaction_type_id = typeRow?.transaction_type_id || null;
+
+    const [[catRow]] = await conn.query(
+      'SELECT transaction_category_id FROM transaction_category WHERE transaction_category_de = ? AND user_id = ?',
+      [transaction_category, user_id]
+    );
+    const transaction_category_id = catRow?.transaction_category_id || null;
+
+    const [[acctFromRow]] = await conn.query(
+      'SELECT account_id FROM account WHERE name = ? AND user_id = ?',
+      [from_account, user_id]
+    );
+    const from_account_id = acctFromRow?.account_id || null;
+
+    let to_account_id = null;
+    if (to_account) {
+      const [[acctToRow]] = await conn.query(
+        'SELECT account_id FROM account WHERE name = ? AND user_id = ?',
+        [to_account, user_id]
+      );
+      to_account_id = acctToRow?.account_id || null;
+    }
+
+    // Insert
+    const insertSql = `
+      INSERT INTO transaction (
+        transaction_date,
+        transaction_amount,
+        transaction_name,
+        transaction_category_id,
+        transaction_type_id,
+        user_id,
+        from_account_id,
+        to_account_id
+      ) VALUES (?,?,?,?,?,?,?,?)
+    `;
+    await conn.query(insertSql, [
+      transaction_date,
+      transaction_amount,
+      transaction_name,
+      transaction_category_id,
+      transaction_type_id,
+      user_id,
+      from_account_id,
+      to_account_id
+    ]);
+
+    await conn.commit();
+    res.sendStatus(201);
+  } catch (err) {
+    await conn.rollback();
+    console.error(err);
+    res.status(500).send('Error adding complex transaction');
+  } finally {
+    conn.release();
+  }
+});
+
+// ========================================
+// COMPLEX USER/CURRENCY ENDPOINTS
+// ========================================
+
+// 1) Get user attributes + latest currency rate text
+app.get('/api/complex/userAttributes/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    // Basic user info
+    const userSql = `
+      SELECT
+        u.user_id,
+        c1.currency_name AS primary_currency,
+        c2.currency_name AS secondary_currency
+      FROM users u
+        LEFT JOIN currency c1 ON u.primary_currency_id = c1.currency_id
+        LEFT JOIN currency c2 ON u.secondary_currency_id = c2.currency_id
+      WHERE u.user_id = ?
+    `;
+    const [[userRow]] = await pool.query(userSql, [userId]);
+    if (!userRow) {
+      return res.json(null);
+    }
+    // Latest currency rate
+    const rateSql = `
+      SELECT conversion_rate, DATE_FORMAT(start_date, '%Y-%m-%d') as start_date
+      FROM currency_rate
+      WHERE user_id = ?
+      ORDER BY start_date DESC
+      LIMIT 1
+    `;
+    const [[rateRow]] = await pool.query(rateSql, [userId]);
+
+    res.json({
+      user_id: userRow.user_id, // or remove if you want no ID at all
+      primary_currency: userRow.primary_currency,
+      secondary_currency: userRow.secondary_currency,
+      latest_rate: rateRow ? rateRow.conversion_rate : null,
+      latest_rate_date: rateRow ? rateRow.start_date : null
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error retrieving user attributes & currency rate');
+  }
+});
+
+// 2) Update user currencies, delete everything except user, new currencies, stocks
+app.put('/api/complex/userCurrencies/:userId', async (req, res) => {
+  const { userId } = req.params;
+  const { primary_currency_name, secondary_currency_name } = req.body;
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // Look up the currency IDs from names
+    const [[pRow]] = await conn.query(
+      'SELECT currency_id FROM currency WHERE currency_name = ?',
+      [primary_currency_name]
+    );
+    const primary_currency_id = pRow?.currency_id || null;
+
+    const [[sRow]] = await conn.query(
+      'SELECT currency_id FROM currency WHERE currency_name = ?',
+      [secondary_currency_name]
+    );
+    const secondary_currency_id = sRow?.currency_id || null;
+
+    // Update user table
+    await conn.query(
+      `UPDATE users
+       SET primary_currency_id = ?,
+           secondary_currency_id = ?
+       WHERE user_id = ?`,
+      [primary_currency_id, secondary_currency_id, userId]
+    );
+
+    // Delete everything except user, new currencies, and stocks
+    // transaction
+    await conn.query('DELETE FROM transaction WHERE user_id = ?', [userId]);
+    // accounts
+    await conn.query('DELETE FROM account WHERE user_id = ?', [userId]);
+    // transaction_category
+    await conn.query('DELETE FROM transaction_category WHERE user_id = ?', [userId]);
+    // currency_rate
+    await conn.query('DELETE FROM currency_rate WHERE user_id = ?', [userId]);
+    // Keep user_stocks (no deletion)
+
+    await conn.commit();
+    res.sendStatus(200);
+  } catch (err) {
+    await conn.rollback();
+    console.error(err);
+    res.status(500).send('Error updating user currencies');
+  } finally {
+    conn.release();
+  }
+});
+
+// 3) Add a currency rate with system date
+app.post('/api/complex/userCurrenciesRate', async (req, res) => {
+  const { user_id, conversion_rate } = req.body;
+  try {
+    const now = new Date();
+    await pool.query(
+      `INSERT INTO currency_rate (conversion_rate, start_date, user_id)
+       VALUES (?,?,?)`,
+      [conversion_rate, now, user_id]
+    );
+    res.sendStatus(201);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error adding currency rate');
+  }
+});
+
+// 4) Delete everything related to the user except the user’s attributes
+app.delete('/api/complex/clearUser/:userId', async (req, res) => {
+  const { userId } = req.params;
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // Transactions
+    await conn.query('DELETE FROM transaction WHERE user_id = ?', [userId]);
+    // Accounts
+    await conn.query('DELETE FROM account WHERE user_id = ?', [userId]);
+    // Transaction categories
+    await conn.query('DELETE FROM transaction_category WHERE user_id = ?', [userId]);
+    // Currency rates
+    await conn.query('DELETE FROM currency_rate WHERE user_id = ?', [userId]);
+    // User stocks
+    await conn.query('DELETE FROM user_stocks WHERE user_id = ?', [userId]);
+    // Keep user row itself
+
+    await conn.commit();
+    res.sendStatus(200);
+  } catch (err) {
+    await conn.rollback();
+    console.error(err);
+    res.status(500).send('Error clearing user data');
+  } finally {
+    conn.release();
+  }
+});
