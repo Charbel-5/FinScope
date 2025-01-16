@@ -1,4 +1,3 @@
-
 -- ----------------------------------------------------
 -- START TRANSACTION
 -- ----------------------------------------------------
@@ -84,10 +83,10 @@ INSERT INTO transaction (
 )
 VALUES
     -- Alice receives Salary (Income)
-    ('2025-02-01', 2000.00, 'February Salary',    1, 1, 1, 1, NULL),
+    ('2025-02-01', 2000.00, 'February Salary',    1, 1, 3, 1, NULL),
     
     -- Alice pays Credit Card Bill (Expense)
-    ('2025-02-02', 200.00, 'CC Payment',          2, 2, 1, 2, NULL),
+    ('2025-02-02', 200.00, 'CC Payment',          2, 2, 4, 2, NULL),
     
     -- Bob pays Rent (Expense)
     ('2025-02-01', 800.00,  'Monthly Rent',       4, 2, 2, 3, NULL),
@@ -102,7 +101,7 @@ VALUES
     ('2025-02-03', 200.00,  'Pay Loan',           7, 3, 2, 3, 4),
 
     -- Alice receives a Bonus (Income)
-    ('2025-02-15', 500.00,  'Mid-month Bonus',    2, 1, 1, 1, NULL);
+    ('2025-02-15', 500.00,  'Mid-month Bonus',    2, 1, 4, 1, NULL);
 
 
 
