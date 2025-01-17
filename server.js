@@ -129,23 +129,52 @@ app.get('/api/accounts/:userId', async (req, res) => {
   }
 });
 
+// Create an account
+// ...existing code...
 
 // Create an account
 app.post('/api/accounts', async (req, res) => {
-  const { name, total_amount, account_type_id, user_id, currency_id } = req.body;
+  const { name, total_amount, account_type_id, user_id, currency_choice } = req.body;
+
+  const conn = await pool.getConnection();
   try {
-    await pool.query(
+    await conn.beginTransaction();
+    const [[userRow]] = await conn.query(
+      'SELECT primary_currency_id, secondary_currency_id FROM users WHERE user_id = ?',
+      [user_id]
+    );
+    if (!userRow) {
+      throw new Error(`User not found with ID: ${user_id}`);
+    }
+
+    let currency_id;
+    if (currency_choice === 'primary') {
+      currency_id = userRow.primary_currency_id;
+    } else if (currency_choice === 'secondary') {
+      currency_id = userRow.secondary_currency_id;
+    } else {
+      throw new Error('Invalid currency choice');
+    }
+
+    await conn.query(
       `INSERT INTO account (
          name, total_amount, account_type_id, user_id, currency_id
        ) VALUES (?,?,?,?,?)`,
       [name, total_amount, account_type_id, user_id, currency_id]
     );
+
+    await conn.commit();
     res.sendStatus(201);
   } catch (err) {
+    await conn.rollback();
     console.error(err);
     res.status(500).send('Error creating account');
+  } finally {
+    conn.release();
   }
 });
+
+// ...existing code...
 
 // Update an account
 app.put('/api/accounts/:id', async (req, res) => {
@@ -519,6 +548,39 @@ app.delete('/api/users/:id', async (req, res) => {
     res.status(500).send('Error deleting user');
   }
 });
+
+// Get user's currencies
+// ...existing code...
+app.get('/api/users/:userId/currencies', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const [[userRow]] = await pool.query(
+      'SELECT primary_currency_id, secondary_currency_id FROM users WHERE user_id = ?',
+      [userId]
+    );
+    if (!userRow) {
+      return res.status(404).send('User not found');
+    }
+
+    const [[primary]] = await pool.query(
+      'SELECT currency_name FROM currency WHERE currency_id = ?',
+      [userRow.primary_currency_id]
+    );
+    const [[secondary]] = await pool.query(
+      'SELECT currency_name FROM currency WHERE currency_id = ?',
+      [userRow.secondary_currency_id]
+    );
+
+    res.json({
+      primary_currency: primary ? primary.currency_name : null,
+      secondary_currency: secondary ? secondary.currency_name : null
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error retrieving user currencies');
+  }
+});
+// ...existing code...
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

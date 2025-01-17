@@ -1,39 +1,67 @@
-// ...existing code...
-export const dummyAccounts = [
-    { id: 1, accountName: 'Checking', accountType: 'Cash', balance: 120 },
-    { id: 2, accountName: 'Credit Card', accountType: 'Credit Card', balance: -300 },
-    { id: 4, accountName: 'Savings', accountType: 'Debit Card', balance: 30000 },
-    { id: 5, accountName: 'Car Loan', accountType: 'Loan', balance: -5000 },
-  ];
-  
-  export function groupAccountsByType(accounts) {
-    const grouped = {};
-    accounts.forEach((acc) => {
-      if (!grouped[acc.accountType]) {
-        grouped[acc.accountType] = [];
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import config from '../Config';
+
+
+export async function createAccount(account) {
+  await axios.post(`${config.apiBaseUrl}/api/accounts`, account);
+}
+
+export async function updateAccount(id, account) {
+  await axios.put(`${config.apiBaseUrl}/api/accounts/${id}`, account);
+}
+
+export async function deleteAccount(id) {
+  await axios.delete(`${config.apiBaseUrl}/api/accounts/${id}`);
+}
+
+export function groupAccountsByType(accounts) {
+  const grouped = {};
+  accounts.forEach((acc) => {
+    if (!grouped[acc.account_type_id]) {
+      grouped[acc.account_type_id] = [];
+    }
+    grouped[acc.account_type_id].push(acc);
+  });
+  return Object.entries(grouped);
+}
+
+function getAssets(accounts) {
+  return accounts
+    .filter((acc) => acc.total_amount >= 0)
+    .reduce((sum, acc) => sum + acc.total_amount, 0);
+}
+
+function getLiabilities(accounts) {
+  return accounts
+    .filter((acc) => acc.total_amount < 0)
+    .reduce((sum, acc) => sum + acc.total_amount, 0);
+}
+
+export function useAccounts(userId) {
+  const [accounts, setAccounts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function fetchAccounts() {
+      try {
+        const response = await axios.get(`${config.apiBaseUrl}/api/accounts/${userId}`);
+        setAccounts(response.data);
+        setLoading(false);
+      } catch (err) {
+        setError(err);
+        setLoading(false);
       }
-      grouped[acc.accountType].push(acc);
-    });
-    return Object.entries(grouped);
-  }
-  
-  function getAssets(accounts) {
-    return accounts
-      .filter((acc) => acc.balance >= 0)
-      .reduce((sum, acc) => sum + acc.balance, 0);
-  }
-  
-  function getLiabilities(accounts) {
-    return accounts
-      .filter((acc) => acc.balance < 0)
-      .reduce((sum, acc) => sum + acc.balance, 0);
-  }
-  
-  export function useAccounts() {
-    const accounts = dummyAccounts;
-    const groupedAccounts = groupAccountsByType(accounts);
-    const assets = getAssets(accounts);
-    const liabilities = getLiabilities(accounts); // This will be negative
-    const total = assets + liabilities;
-    return { groupedAccounts, assets, liabilities, total };
-  }
+    }
+
+    fetchAccounts();
+  }, [userId]);
+
+  const groupedAccounts = groupAccountsByType(accounts);
+  const assets = getAssets(accounts);
+  const liabilities = getLiabilities(accounts); // This will be negative
+  const total = assets + liabilities;
+
+  return { groupedAccounts, assets, liabilities, total, loading, error };
+}
