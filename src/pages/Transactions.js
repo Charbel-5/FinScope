@@ -9,10 +9,8 @@ import './Transactions.css';
 //const nameofthefile() 
 function Transactions() {
 
-  const { transactionsGrouped, availableMonths, handleSave, handleDelete } =
+  const { transactions, transactionsGrouped, availableMonths, handleSave, handleDelete } =
     useTransactions();
-
-
 
 
   //-------------------------------------logic for the monthly switcher---------------

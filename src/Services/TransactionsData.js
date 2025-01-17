@@ -1,6 +1,11 @@
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
-//--------- Segmenting the data and sorting it ------------------------------------------------//
-import { useState } from 'react';
+// Set the base URL for axios
+axios.defaults.baseURL = 'http://localhost:3000';
+
+const userId = 2;
+
 // we created a dummy array of transactions, in this case the ids are ordered (later down the line they will become unordered)
 export const dummyTransactions = [
     {
@@ -206,62 +211,49 @@ export const dummyTransactions = [
     }
   ];
 // Sort transactions descending by date
-export  function sortTransactionsByDateDescending(txns) {
-    //the argument is an array
-    return [...txns].sort((a, b) => new Date(b.date) - new Date(a.date));
-    //[...txns] means that we took a copy of that array, we pass things by reference in react, protect the original array and ensure immutability,
-    //and the sorting part means that we are sorting them based on the date
-    //we transform the transactions string date component into a Date object
-    //and we base the comparison of the value of the difference of two Date of two elements
-  }
-  // Group transactions by month/year from current to oldest
-export  function groupTransactionsByMonthFromCurrent (txns) {
-    if (!txns || txns.length === 0) {//the !txns part check if it's falsy in general, meaning null empty string false but not empty array
-      return [];
-    }
+export function sortTransactionsByDateDescending(txns) {
+  return [...txns].sort((a, b) => new Date(b.date) - new Date(a.date));
+}
 
-    //it is made clear that txns is already sorted, so we get all this information, mainly the span of the months in which transactions are made
-    const oldestTransaction = txns[txns.length - 1];
-    const oldestDate = new Date(oldestTransaction.date);
-    const oldestYear = oldestDate.getFullYear();
-    const oldestMonth = oldestDate.getMonth();
-
-    //this gives us the current system date
-    const now = new Date();
-    let currentYear = now.getFullYear();
-    let currentMonth = now.getMonth();
-
-    //it is segmentation time!
-    const results = [];
-    //remember we got the span of the months and years, we use this to create the rows for the new array
-    //we can decrement with some logic until we hit the last transaction months/year (this included of course)
-    while (
-      currentYear > oldestYear ||
-      (currentYear === oldestYear && currentMonth >= oldestMonth)
-    ) {
-      const monthlyTransactions = txns.filter((tx) => {
-        const txDate = new Date(tx.date);
-        return (
-          txDate.getFullYear() === currentYear && txDate.getMonth() === currentMonth
-        );
-      //this enables us to retreive all the transactions with the specified month and year
-      });
-      //remember we pushed not only the transaction but also the month and year
-      results.push({
-        year: currentYear,
-        month: currentMonth,
-        transactions: monthlyTransactions,
-      });
-      //decrementation logic
-      currentMonth--;
-      if (currentMonth < 0) {
-        currentMonth = 11;
-        currentYear--;
-      }
-    }
-    return results;
+// Group transactions by month/year from current to oldest
+export function groupTransactionsByMonthFromCurrent(txns) {
+  if (!txns || txns.length === 0) {
+    return [];
   }
 
+  const oldestTransaction = txns[txns.length - 1];
+  const oldestDate = new Date(oldestTransaction.date);
+  const oldestYear = oldestDate.getFullYear();
+  const oldestMonth = oldestDate.getMonth();
+
+  const now = new Date();
+  let currentYear = now.getFullYear();
+  let currentMonth = now.getMonth();
+
+  const results = [];
+  while (
+    currentYear > oldestYear ||
+    (currentYear === oldestYear && currentMonth >= oldestMonth)
+  ) {
+    const monthlyTransactions = txns.filter((tx) => {
+      const txDate = new Date(tx.date);
+      return (
+        txDate.getFullYear() === currentYear && txDate.getMonth() === currentMonth
+      );
+    });
+    results.push({
+      year: currentYear,
+      month: currentMonth,
+      transactions: monthlyTransactions,
+    });
+    currentMonth--;
+    if (currentMonth < 0) {
+      currentMonth = 11;
+      currentYear--;
+    }
+  }
+  return results;
+}
 
 export function transformMonthTransactionsToDailyData(transactions) {
   const dailyMap = {};
@@ -283,9 +275,6 @@ export function transformMonthTransactionsToDailyData(transactions) {
   return Object.values(dailyMap).sort((a, b) => parseInt(a.date) - parseInt(b.date));
 }
 
-
-
-
 //-------------------------------------logic for the monthly switcher---------------
 // For the MonthlySwitcher component to display the name of the month and year.
 //what does the map exactly do, it just goes through every element in the array, and or every element it created a date object
@@ -299,23 +288,52 @@ export function transformMonthTransactionsToDailyData(transactions) {
 //handle delete
 // Custom hook
 export function useTransactions() {
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    const [transactions, setTransactions] = useState(dummyTransactions);
-  
-    // Sort and group transactions
-    const sortedTransactions = sortTransactionsByDateDescending(transactions);
-    const transactionsGrouped = groupTransactionsByMonthFromCurrent(
-      sortedTransactions
-    );
-  
-    // Available months for MonthlySwitcher
-    const availableMonths = transactionsGrouped.map((g) => {
-      const date = new Date(g.year, g.month, 1);
-      return date.toLocaleString('default', { month: 'long', year: 'numeric' });
-    });
-  
-    // Handle saving (add/edit) transactions
-    const handleSave = (updatedTxn) => {
+  useEffect(() => {
+    async function fetchTransactions() {
+      try {
+        console.log("hello world");
+        const response = await axios.get(`/api/complex/transactions/${userId}`);
+        console.log('Fetched transactions:', response.data); // Debugging log
+        setTransactions(response.data);
+      } catch (err) {
+        console.error('Error fetching transactions:', err); // Debugging log
+        setError(err);
+      } finally {
+        setLoading(false);
+        console.log("bye world");
+      }
+    }
+
+    fetchTransactions();
+  }, []);
+
+  // Sort and group transactions
+  const sortedTransactions = sortTransactionsByDateDescending(transactions);
+  const transactionsGrouped = groupTransactionsByMonthFromCurrent(sortedTransactions);
+
+  console.log('Sorted transactions:', sortedTransactions); // Debugging log
+  console.log('Grouped transactions:', transactionsGrouped); // Debugging log
+
+  // Available months for MonthlySwitcher
+  const availableMonths = transactionsGrouped.map((g) => {
+    const date = new Date(g.year, g.month, 1);
+    return date.toLocaleString('default', { month: 'long', year: 'numeric' });
+  });
+
+  // Handle saving (add/edit) transactions
+  const handleSave = async (updatedTxn) => {
+    try {
+      if (updatedTxn.id) {
+        // Edit existing
+        await axios.post(`/api/${userId}/transactions`, updatedTxn);
+      } else {
+        // Add new
+        await axios.post(`/api/${userId}/transactions`, updatedTxn);
+      }
       setTransactions((prev) => {
         if (updatedTxn.id) {
           return prev.map((t) => (t.id === updatedTxn.id ? updatedTxn : t));
@@ -324,18 +342,30 @@ export function useTransactions() {
           return [...prev, { ...updatedTxn, id: newId }];
         }
       });
-    };
-  
-    // Handle deleting transactions
-    const handleDelete = (id) => {
+    } catch (err) {
+      console.error('Error saving transaction:', err); // Debugging log
+      setError(err);
+    }
+  };
+
+  // Handle deleting transactions
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`/api/transactions/${id}`);
       setTransactions((prev) => prev.filter((txn) => txn.id !== id));
-    };
-  
-    return {
-      transactionsGrouped,
-      availableMonths,
-      handleSave,
-      handleDelete,
-      transactions
-    };
-  }
+    } catch (err) {
+      console.error('Error deleting transaction:', err); // Debugging log
+      setError(err);
+    }
+  };
+
+  return {
+    transactions,
+    transactionsGrouped,
+    availableMonths,
+    handleSave,
+    handleDelete,
+    loading,
+    error,
+  };
+}
