@@ -61,26 +61,26 @@
   opacity: 1;
 }
 
-.transaction .amount.income {
+.transaction .amount.Income {
   color: #61ef61;
 }
 
-.transaction .amount.expense {
+.transaction .amount.Expense {
   color: #f06969;
 }
 
-.transaction .amount.transfer {
+.transaction .amount.Transfer {
   color: #52c8f0;
 }
 
-.transaction .type.income {
+.transaction .type.Income {
   color: #61ef61;
 }
 
-.transaction .type.expense {
+.transaction .type.Expense {
   color: #f06969;
 }
 
-.transaction .type.transfer {
+.transaction .type.Transfer {
   color: #52c8f0;
 }

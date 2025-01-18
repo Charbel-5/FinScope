@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { sortTransactionsByDateDescending, groupTransactionsByMonthFromCurrent } from '../Services/TransactionsData';
 import axios from 'axios';
 
-const userId =2;
+const userId = 2;
 
 // Create a context
 const TransactionsContext = createContext(null);
@@ -30,32 +30,23 @@ function useTransactionsLogic() {
 
   const sortedTransactions = sortTransactionsByDateDescending(transactions);
   const transactionsGrouped = groupTransactionsByMonthFromCurrent(sortedTransactions);
-  console.log(sortedTransactions);
-  console.log(transactionsGrouped);
 
   const availableMonths = transactionsGrouped.map((g) => {
     const date = new Date(g.year, g.month, 1);
     return date.toLocaleString('default', { month: 'long', year: 'numeric' });
   });
-  console.log(availableMonths);
 
   const handleSave = async (updatedTxn) => {
     try {
-      if (updatedTxn.id) {
+      if (updatedTxn.transaction_id) {
         // Edit existing
-        await axios.post(`/api/${userId}/transactions`, updatedTxn);
+        await axios.put(`/api/complex/transaction/${updatedTxn.transaction_id}`, updatedTxn);
       } else {
         // Add new
-        await axios.post(`/api/${userId}/transactions`, updatedTxn);
+        const response = await axios.post(`/api/complex/transaction`, { ...updatedTxn, user_id: userId });
+        const newTransaction = { ...updatedTxn, transaction_id: response.data.transaction_id };
+        setTransactions((prev) => [...prev, newTransaction]);
       }
-      setTransactions((prev) => {
-        if (updatedTxn.id) {
-          return prev.map((t) => (t.id === updatedTxn.id ? updatedTxn : t));
-        } else {
-          const newId = Math.max(0, ...prev.map((p) => p.id)) + 1;
-          return [...prev, { ...updatedTxn, id: newId }];
-        }
-      });
     } catch (err) {
       setError(err);
     }
@@ -63,8 +54,8 @@ function useTransactionsLogic() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`/api/transactions/${id}`);
-      setTransactions((prev) => prev.filter((txn) => txn.id !== id));
+      await axios.delete(`/api/complex/transaction/${id}`);
+      setTransactions((prev) => prev.filter((txn) => txn.transaction_id !== id));
     } catch (err) {
       setError(err);
     }

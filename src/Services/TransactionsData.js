@@ -6,246 +6,38 @@ axios.defaults.baseURL = 'http://localhost:3000';
 
 const userId = 2;
 
-// we created a dummy array of transactions, in this case the ids are ordered (later down the line they will become unordered)
-export const dummyTransactions = [
-    {
-      id: 1,
-      date: '2025-01-15',
-      amount: 2500,
-      accountFrom: 'Checking',
-      transactionName: 'Salary',
-      category: 'Salary',
-      type: 'income',
-      currency: 'USD',
-    },
-    {
-      id: 2,
-      date: '2025-01-14',
-      amount: 50,
-      accountFrom: 'Car Loan',
-      transactionName: 'Car',
-      category: 'Food',
-      type: 'expense',
-      currency: 'USD',
-    },
-    {
-      id: 3,
-      date: '2025-01-13',
-      amount: 100,
-      accountFrom: 'Checking',
-      accountTo: 'Savings',
-      transactionName: 'Transfer to Savings',
-      category: 'Transfer',
-      type: 'transfer',
-      currency: 'USD',
-    },
-    {
-      id: 4,
-      date: '2025-01-12',
-      amount: 250,
-      accountFrom: 'Credit Card',
-      transactionName: 'Online Shopping',
-      category: 'Shopping',
-      type: 'expense',
-      currency: 'USD',
-    },
-    {
-      id: 5,
-      date: '2024-12-25',
-      amount: 75,
-      accountFrom: 'Checking',
-      transactionName: 'Restaurant',
-      category: 'Food',
-      type: 'expense',
-      currency: 'USD',
-    },
-    {
-      id: 6,
-      date: '2024-12-24',
-      amount: 1000,
-      accountFrom: 'Checking',
-      transactionName: 'Freelance Income',
-      category: 'Freelance',
-      type: 'income',
-      currency: 'USD',
-    },
-    {
-      id: 7,
-      date: '2024-12-23',
-      amount: 300,
-      accountFrom: 'Savings',
-      transactionName: 'Vacation Savings',
-      category: 'Savings',
-      type: 'expense',
-      currency: 'USD',
-    },
-    {
-      id: 8,
-      date: '2024-12-22',
-      amount: 500,
-      accountFrom: 'Credit Card',
-      transactionName: 'Holiday Shopping',
-      category: 'Shopping',
-      type: 'expense',
-      currency: 'USD',
-    },
-    {
-      id: 9,
-      date: '2024-12-21',
-      amount: 80,
-      accountFrom: 'Checking',
-      transactionName: 'Electric Bill',
-      category: 'Utilities',
-      type: 'expense',
-      currency: 'USD',
-    },
-    {
-      id: 10,
-      date: '2024-12-20',
-      amount: 60,
-      accountFrom: 'Checking',
-      transactionName: 'Internet Bill',
-      category: 'Utilities',
-      type: 'expense',
-      currency: 'USD',
-    },
-    {
-      id: 11,
-      date: '2024-11-15',
-      amount: 40,
-      accountFrom: 'Savings',
-      transactionName: 'Emergency Fund',
-      category: 'Savings',
-      type: 'income',
-      currency: 'USD',
-    },
-    {
-      id: 12,
-      date: '2024-11-14',
-      amount: 70,
-      accountFrom: 'Checking',
-      transactionName: 'Gas',
-      category: 'Transport',
-      type: 'expense',
-      currency: 'USD',
-    },
-    {
-      id: 13,
-      date: '2024-11-13',
-      amount: 150,
-      accountFrom: 'Credit Card',
-      transactionName: 'Clothing',
-      category: 'Shopping',
-      type: 'expense',
-      currency: 'USD',
-    },
-    {
-      id: 14,
-      date: '2024-11-12',
-      amount: 200,
-      accountFrom: 'Checking',
-      transactionName: 'Medical Bill',
-      category: 'Health',
-      type: 'expense',
-      currency: 'USD',
-    },
-    {
-      id: 15,
-      date: '2024-11-11',
-      amount: 30,
-      accountFrom: 'Checking',
-      transactionName: 'Subscription Service',
-      category: 'Entertainment',
-      type: 'expense',
-      currency: 'USD',
-    },
-    {
-      id: 16,
-      date: '2024-11-10',
-      amount: 120,
-      accountFrom: 'Checking',
-      transactionName: 'Gym Membership',
-      category: 'Health',
-      type: 'expense',
-      currency: 'USD',
-    },
-    {
-      id: 17,
-      date: '2024-10-10',
-      amount: 400,
-      accountFrom: 'Savings',
-      transactionName: 'Car Maintenance',
-      category: 'Transport',
-      type: 'expense',
-      currency: 'USD',
-    },
-    {
-      id: 18,
-      date: '2024-10-09',
-      amount: 600,
-      accountFrom: 'Checking',
-      transactionName: 'Rent',
-      category: 'Housing',
-      type: 'expense',
-      currency: 'USD',
-    },
-    {
-      id: 19,
-      date: '2024-10-08',
-      amount: 350,
-      accountFrom: 'Credit Card',
-      transactionName: 'Furniture',
-      category: 'Shopping',
-      type: 'expense',
-      currency: 'USD',
-    },
-    {
-      id: 20,
-      date: '2024-10-07',
-      amount: 100,
-      accountFrom: 'Checking',
-      transactionName: 'Groceries',
-      category: 'Food',
-      type: 'expense',
-      currency: 'USD',
-    }
-  ];
 // Sort transactions descending by date
 export function sortTransactionsByDateDescending(txns) {
-  return [...txns].sort((a, b) => new Date(b.date) - new Date(a.date));
+  return [...txns].sort((a, b) => {
+    const dateA = new Date(a.transaction_date);
+    const dateB = new Date(b.transaction_date);
+    return dateB - dateA;
+  });
 }
 
-// Group transactions by month/year from current to oldest
-export function groupTransactionsByMonthFromCurrent(txns) {
-  if (!txns || txns.length === 0) {
-    return [];
-  }
 
-  const oldestTransaction = txns[txns.length - 1];
-  const oldestDate = new Date(oldestTransaction.date);
+export function groupTransactionsByMonthFromCurrent(txns) {
+  if (!txns || txns.length === 0) return [];
+
+  const sorted = sortTransactionsByDateDescending(txns);
+  const newest = sorted[0];
+  const oldest = sorted[sorted.length - 1];
+
+  const newestDate = new Date(newest.transaction_date);
+  const oldestDate = new Date(oldest.transaction_date);
+
+  let currentYear = newestDate.getFullYear();
+  let currentMonth = newestDate.getMonth();
   const oldestYear = oldestDate.getFullYear();
   const oldestMonth = oldestDate.getMonth();
 
-  const now = new Date();
-  let currentYear = now.getFullYear();
-  let currentMonth = now.getMonth();
-
   const results = [];
-  while (
-    currentYear > oldestYear ||
-    (currentYear === oldestYear && currentMonth >= oldestMonth)
-  ) {
-    const monthlyTransactions = txns.filter((tx) => {
-      const txDate = new Date(tx.date);
-      return (
-        txDate.getFullYear() === currentYear && txDate.getMonth() === currentMonth
-      );
+  while (currentYear > oldestYear || (currentYear === oldestYear && currentMonth >= oldestMonth)) {
+    const monthlyTxns = sorted.filter(tx => {
+      const d = new Date(tx.transaction_date);
+      return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
     });
-    results.push({
-      year: currentYear,
-      month: currentMonth,
-      transactions: monthlyTransactions,
-    });
+    results.push({ year: currentYear, month: currentMonth, transactions: monthlyTxns });
     currentMonth--;
     if (currentMonth < 0) {
       currentMonth = 11;
@@ -255,19 +47,20 @@ export function groupTransactionsByMonthFromCurrent(txns) {
   return results;
 }
 
+
 export function transformMonthTransactionsToDailyData(transactions) {
   const dailyMap = {};
 
   transactions.forEach(txn => {
-    const day = new Date(txn.date).getDate();
+    const day = new Date(txn.transaction_date).getDate();
     if (!dailyMap[day]) {
       // zero income/expense for each new day
       dailyMap[day] = { date: String(day).padStart(2, '0'), income: 0, expense: 0 };
     }
-    if (txn.type === 'income') {
-      dailyMap[day].income += txn.amount;
-    } else if (txn.type === 'expense') {
-      dailyMap[day].expense += txn.amount;
+    if (txn.transaction_type && txn.transaction_type.toLowerCase() === 'income') {
+      dailyMap[day].income += txn.transaction_amount;
+    } else if (txn.transaction_type && txn.transaction_type.toLowerCase() === 'expense') {
+      dailyMap[day].expense += txn.transaction_amount;
     }
   });
 

@@ -1,22 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './TransactionInput.css';
 
 function TransactionInput({ onClose, onSave, initialTransaction }) {
   const [transactionType, setTransactionType] = useState(
-    initialTransaction?.type || 'income'
+    initialTransaction?.transaction_type || 'income'
   );
 
-  // IMPORTANT: Include `id` in your formData if it exists
   const [formData, setFormData] = useState({
-    id: initialTransaction?.id || null,
-    date: initialTransaction?.date || '',
-    amount: initialTransaction?.amount || '',
-    accountFrom: initialTransaction?.accountFrom || '',
-    accountTo: initialTransaction?.accountTo || '',
-    transactionName: initialTransaction?.transactionName || '',
-    category: initialTransaction?.category || '',
+    transaction_id: initialTransaction?.transaction_id || null,
+    transaction_date: initialTransaction?.transaction_date || '',
+    transaction_amount: initialTransaction?.transaction_amount || '',
+    from_account: initialTransaction?.from_account || '',
+    to_account: initialTransaction?.to_account || '',
+    transaction_name: initialTransaction?.transaction_name || '',
+    transaction_category: initialTransaction?.transaction_category || '',
     currency: initialTransaction?.currency || 'USD',
   });
+
+  useEffect(() => {
+    if (initialTransaction) {
+      setTransactionType(initialTransaction.transaction_type);
+      setFormData({
+        transaction_id: initialTransaction.transaction_id,
+        transaction_date: initialTransaction.transaction_date,
+        transaction_amount: initialTransaction.transaction_amount,
+        from_account: initialTransaction.from_account,
+        to_account: initialTransaction.to_account,
+        transaction_name: initialTransaction.transaction_name,
+        transaction_category: initialTransaction.transaction_category,
+        currency: initialTransaction.currency,
+      });
+    }
+  }, [initialTransaction]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -27,13 +42,10 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    // Pass the updated transaction (including id) to onSave
     onSave({
       ...formData,
-      type: transactionType, // override the type from toggle
+      transaction_type: transactionType,
     });
-
     onClose();
   };
 
@@ -66,42 +78,40 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
 
         <form onSubmit={handleSubmit}>
           <input
-            name="date"
-            value={formData.date}
+            name="transaction_date"
+            value={formData.transaction_date}
             onChange={handleChange}
             placeholder="Date"
           />
           <input
-            name="amount"
-            value={formData.amount}
+            name="transaction_amount"
+            value={formData.transaction_amount}
             onChange={handleChange}
             placeholder="Amount"
           />
           <input
-            name="transactionName"
-            value={formData.transactionName}
+            name="transaction_name"
+            value={formData.transaction_name}
             onChange={handleChange}
             placeholder="Description"
           />
           <input
-            name="accountFrom"
-            value={formData.accountFrom}
+            name="from_account"
+            value={formData.from_account}
             onChange={handleChange}
             placeholder="Account From"
           />
-
           {transactionType === 'transfer' && (
             <input
-              name="accountTo"
-              value={formData.accountTo}
+              name="to_account"
+              value={formData.to_account}
               onChange={handleChange}
               placeholder="Account To"
             />
           )}
-
           <input
-            name="category"
-            value={formData.category}
+            name="transaction_category"
+            value={formData.transaction_category}
             onChange={handleChange}
             placeholder="Category"
           />
@@ -111,7 +121,6 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
             onChange={handleChange}
             placeholder="Currency"
           />
-
           <button type="submit">Submit</button>
         </form>
       </div>
