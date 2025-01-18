@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import config from '../Config';
 
-
 export async function createAccount(account) {
   await axios.post(`${config.apiBaseUrl}/api/accounts`, account);
 }
@@ -18,24 +17,24 @@ export async function deleteAccount(id) {
 export function groupAccountsByType(accounts) {
   const grouped = {};
   accounts.forEach((acc) => {
-    if (!grouped[acc.account_type_id]) {
-      grouped[acc.account_type_id] = [];
+    if (!grouped[acc.account_type_description]) {
+      grouped[acc.account_type_description] = [];
     }
-    grouped[acc.account_type_id].push(acc);
+    grouped[acc.account_type_description].push(acc);
   });
   return Object.entries(grouped);
 }
 
 function getAssets(accounts) {
   return accounts
-    .filter((acc) => acc.total_amount >= 0)
-    .reduce((sum, acc) => sum + acc.total_amount, 0);
+    .filter((acc) => Number(acc.total_amount) >= 0)
+    .reduce((sum, acc) => sum + Number(acc.total_amount), 0);
 }
 
 function getLiabilities(accounts) {
   return accounts
-    .filter((acc) => acc.total_amount < 0)
-    .reduce((sum, acc) => sum + acc.total_amount, 0);
+    .filter((acc) => Number(acc.total_amount) < 0)
+    .reduce((sum, acc) => sum + Number(acc.total_amount), 0);
 }
 
 export function useAccounts(userId) {

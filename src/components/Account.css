@@ -1,24 +1,58 @@
-/* ...existing code... */
 .account-row {
-    display: flex;
-    justify-content: space-between;
-    background-color: #ffffff;
-    padding: 8px 12px;
-    margin-bottom: 4px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    transition: background-color 0.3s, transform 0.3s;
-    cursor: pointer;
-  }
-  
-  .account-row:hover {
-    background-color: #eaeaea;
-    transform: scale(1.02);
-  }
+  display: flex;
+  justify-content: space-between;
+  background-color: #ffffff;
+  padding: 8px 12px;
+  margin-bottom: 4px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  transition: background-color 0.3s, transform 0.3s;
+  cursor: pointer;
+  position: relative;
+}
 
-  .account-titles {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-  }
-  
+.account-row:hover {
+  background-color: #eaeaea;
+  transform: scale(1.02);
+}
+
+.account-titles {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.account-amount {
+  transition: padding-right 0.3s;
+}
+
+.account-actions {
+  display: none;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: row;
+  gap: 5px;
+}
+
+.account-row:hover .account-actions {
+  display: flex;
+}
+
+.account-row:hover .account-amount {
+  padding-right: 120px;
+}
+
+.account-actions button {
+  background-color: #0d6efd;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.account-actions button:hover {
+  background-color: #0b5ed7;
+}

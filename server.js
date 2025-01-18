@@ -121,7 +121,17 @@ app.delete('/api/transactions/:transactionId', async (req, res) => {
 app.get('/api/accounts/:userId', async (req, res) => {
   const { userId } = req.params;
   try {
-    const [rows] = await pool.query('SELECT * FROM account WHERE user_id = ?', [userId]);
+    const query = `
+      SELECT 
+        a.*, 
+        at.account_type_description,
+        c.symbol AS currency_symbol
+      FROM account a
+      JOIN account_type at ON a.account_type_id = at.account_type_id
+      JOIN currency c ON a.currency_id = c.currency_id
+      WHERE a.user_id = ?
+    `;
+    const [rows] = await pool.query(query, [userId]);
     res.json(rows);
   } catch (err) {
     console.error(err);
@@ -129,8 +139,6 @@ app.get('/api/accounts/:userId', async (req, res) => {
   }
 });
 
-// Create an account
-// ...existing code...
 
 // Create an account
 app.post('/api/accounts', async (req, res) => {
@@ -167,8 +175,8 @@ app.post('/api/accounts', async (req, res) => {
     res.sendStatus(201);
   } catch (err) {
     await conn.rollback();
-    console.error(err);
-    res.status(500).send('Error creating account');
+    console.error('Error creating account:', err.message);
+    res.status(500).send(`Error creating account: ${err.message}`);
   } finally {
     conn.release();
   }
