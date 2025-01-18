@@ -1,37 +1,73 @@
-import { createContext, useContext, useState } from 'react';
-import { dummyTransactions, sortTransactionsByDateDescending, groupTransactionsByMonthFromCurrent } from '../Services/TransactionsData';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { sortTransactionsByDateDescending, groupTransactionsByMonthFromCurrent } from '../Services/TransactionsData';
+import axios from 'axios';
+
+const userId =2;
 
 // Create a context
 const TransactionsContext = createContext(null);
 
 // Actual logic that used to be in useTransactions()
 function useTransactionsLogic() {
-  const [transactions, setTransactions] = useState(dummyTransactions);
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function fetchTransactions() {
+      try {
+        const response = await axios.get(`/api/complex/transactions/${userId}`);
+        setTransactions(response.data);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchTransactions();
+  }, []);
 
   const sortedTransactions = sortTransactionsByDateDescending(transactions);
   const transactionsGrouped = groupTransactionsByMonthFromCurrent(sortedTransactions);
+  console.log(sortedTransactions);
+  console.log(transactionsGrouped);
 
   const availableMonths = transactionsGrouped.map((g) => {
     const date = new Date(g.year, g.month, 1);
     return date.toLocaleString('default', { month: 'long', year: 'numeric' });
   });
+  console.log(availableMonths);
 
-  const handleSave = (updatedTxn) => {
-    setTransactions((prev) => {
-      updatedTxn.amount = parseFloat(updatedTxn.amount);
+  const handleSave = async (updatedTxn) => {
+    try {
       if (updatedTxn.id) {
         // Edit existing
-        return prev.map((t) => (t.id === updatedTxn.id ? updatedTxn : t));
+        await axios.post(`/api/${userId}/transactions`, updatedTxn);
       } else {
         // Add new
-        const newId = Math.max(0, ...prev.map((p) => p.id)) + 1;
-        return [...prev, { ...updatedTxn, id: newId }];
+        await axios.post(`/api/${userId}/transactions`, updatedTxn);
       }
-    });
+      setTransactions((prev) => {
+        if (updatedTxn.id) {
+          return prev.map((t) => (t.id === updatedTxn.id ? updatedTxn : t));
+        } else {
+          const newId = Math.max(0, ...prev.map((p) => p.id)) + 1;
+          return [...prev, { ...updatedTxn, id: newId }];
+        }
+      });
+    } catch (err) {
+      setError(err);
+    }
   };
 
-  const handleDelete = (id) => {
-    setTransactions((prev) => prev.filter((txn) => txn.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`/api/transactions/${id}`);
+      setTransactions((prev) => prev.filter((txn) => txn.id !== id));
+    } catch (err) {
+      setError(err);
+    }
   };
 
   return {
@@ -40,6 +76,8 @@ function useTransactionsLogic() {
     availableMonths,
     handleSave,
     handleDelete,
+    loading,
+    error,
   };
 }
 
