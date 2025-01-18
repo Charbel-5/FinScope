@@ -129,23 +129,52 @@ app.get('/api/accounts/:userId', async (req, res) => {
   }
 });
 
+// Create an account
+// ...existing code...
 
 // Create an account
 app.post('/api/accounts', async (req, res) => {
-  const { name, total_amount, account_type_id, user_id, currency_id } = req.body;
+  const { name, total_amount, account_type_id, user_id, currency_choice } = req.body;
+
+  const conn = await pool.getConnection();
   try {
-    await pool.query(
+    await conn.beginTransaction();
+    const [[userRow]] = await conn.query(
+      'SELECT primary_currency_id, secondary_currency_id FROM users WHERE user_id = ?',
+      [user_id]
+    );
+    if (!userRow) {
+      throw new Error(User not found with ID: ${user_id});
+    }
+
+    let currency_id;
+    if (currency_choice === 'primary') {
+      currency_id = userRow.primary_currency_id;
+    } else if (currency_choice === 'secondary') {
+      currency_id = userRow.secondary_currency_id;
+    } else {
+      throw new Error('Invalid currency choice');
+    }
+
+    await conn.query(
       `INSERT INTO account (
          name, total_amount, account_type_id, user_id, currency_id
        ) VALUES (?,?,?,?,?)`,
       [name, total_amount, account_type_id, user_id, currency_id]
     );
+
+    await conn.commit();
     res.sendStatus(201);
   } catch (err) {
+    await conn.rollback();
     console.error(err);
     res.status(500).send('Error creating account');
+  } finally {
+    conn.release();
   }
 });
+
+// ...existing code...
 
 // Update an account
 app.put('/api/accounts/:id', async (req, res) => {
@@ -520,8 +549,41 @@ app.delete('/api/users/:id', async (req, res) => {
   }
 });
 
+// Get user's currencies
+// ...existing code...
+app.get('/api/users/:userId/currencies', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const [[userRow]] = await pool.query(
+      'SELECT primary_currency_id, secondary_currency_id FROM users WHERE user_id = ?',
+      [userId]
+    );
+    if (!userRow) {
+      return res.status(404).send('User not found');
+    }
+
+    const [[primary]] = await pool.query(
+      'SELECT currency_name FROM currency WHERE currency_id = ?',
+      [userRow.primary_currency_id]
+    );
+    const [[secondary]] = await pool.query(
+      'SELECT currency_name FROM currency WHERE currency_id = ?',
+      [userRow.secondary_currency_id]
+    );
+
+    res.json({
+      primary_currency: primary ? primary.currency_name : null,
+      secondary_currency: secondary ? secondary.currency_name : null
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error retrieving user currencies');
+  }
+});
+// ...existing code...
+
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(Server is running on port ${PORT});
 });
 
 
@@ -890,7 +952,7 @@ app.put('/api/complex/userCurrencies/:userId', async (req, res) => {
       [primary_currency_name]
     );
     if (!pRows || pRows.length === 0) {
-      throw new Error(`Primary currency not found: ${primary_currency_name}`);
+      throw new Error(Primary currency not found: ${primary_currency_name});
     }
     const primary_currency_id = pRows[0].currency_id;
 
@@ -900,7 +962,7 @@ app.put('/api/complex/userCurrencies/:userId', async (req, res) => {
       [secondary_currency_name]
     );
     if (!sRows || sRows.length === 0) {
-      throw new Error(`Secondary currency not found: ${secondary_currency_name}`);
+      throw new Error(Secondary currency not found: ${secondary_currency_name});
     }
     const secondary_currency_id = sRows[0].currency_id;
 
@@ -960,135 +1022,4 @@ app.delete('/api/complex/clearUser/:userId', async (req, res) => {
   } finally {
     conn.release();
   }
-});
-
-import axios from 'axios';
-
-// Set the base URL for axios
-axios.defaults.baseURL = 'http://localhost:3001';
-
-const userId = 2;
-
-// Custom hook
-export function useTransactions() {
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    async function fetchTransactions() {
-      try {
-        const response = await axios.get(`/api/${userId}/transactions`);
-        console.log('Fetched transactions:', response.data); // Debugging log
-        setTransactions(response.data);
-      } catch (err) {
-        console.error('Error fetching transactions:', err); // Debugging log
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchTransactions();
-  }, []);
-
-  // Sort and group transactions
-  const sortedTransactions = sortTransactionsByDateDescending(transactions);
-  const transactionsGrouped = groupTransactionsByMonthFromCurrent(sortedTransactions);
-
-  console.log('Sorted transactions:', sortedTransactions); // Debugging log
-  console.log('Grouped transactions:', transactionsGrouped); // Debugging log
-
-  const availableMonths = transactionsGrouped.map((g) => {
-    const date = new Date(g.year, g.month, 1);
-    return date.toLocaleString('default', { month: 'long', year: 'numeric' });
-  });
-
-  const handleSave = async (updatedTxn) => {
-    try {
-      if (updatedTxn.id) {
-        // Edit existing
-        await axios.post(`/api/${userId}/transactions`, updatedTxn);
-      } else {
-        // Add new
-        await axios.post(`/api/${userId}/transactions`, updatedTxn);
-      }
-      setTransactions((prev) => {
-        if (updatedTxn.id) {
-          return prev.map((t) => (t.id === updatedTxn.id ? updatedTxn : t));
-        } else {
-          const newId = Math.max(0, ...prev.map((p) => p.id)) + 1;
-          return [...prev, { ...updatedTxn, id: newId }];
-        }
-      });
-    } catch (err) {
-      console.error('Error saving transaction:', err); // Debugging log
-      setError(err);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`/api/transactions/${id}`);
-      setTransactions((prev) => prev.filter((txn) => txn.id !== id));
-    } catch (err) {
-      console.error('Error deleting transaction:', err); // Debugging log
-      setError(err);
-    }
-  };
-
-  return {
-    transactions,
-    transactionsGrouped,
-    availableMonths,
-    handleSave,
-    handleDelete,
-    loading,
-    error,
-  };
-}
-
-// Sort transactions descending by date
-export function sortTransactionsByDateDescending(txns) {
-  return [...txns].sort((a, b) => new Date(b.date) - new Date(a.date));
-}
-
-// Group transactions by month/year from current to oldest
-export function groupTransactionsByMonthFromCurrent(txns) {
-  if (!txns || txns.length === 0) {
-    return [];
-  }
-
-  const oldestTransaction = txns[txns.length - 1];
-  const oldestDate = new Date(oldestTransaction.date);
-  const oldestYear = oldestDate.getFullYear();
-  const oldestMonth = oldestDate.getMonth();
-
-  const now = new Date();
-  let currentYear = now.getFullYear();
-  let currentMonth = now.getMonth();
-
-  const results = [];
-  while (
-    currentYear > oldestYear ||
-    (currentYear === oldestYear && currentMonth >= oldestMonth)
-  ) {
-    const monthlyTransactions = txns.filter((tx) => {
-      const txDate = new Date(tx.date);
-      return (
-        txDate.getFullYear() === currentYear && txDate.getMonth() === currentMonth
-      );
-    });
-    results.push({
-      year: currentYear,
-      month: currentMonth,
-      transactions: monthlyTransactions,
-    });
-    currentMonth--;
-    if (currentMonth < 0) {
-      currentMonth = 11;
-      currentYear--;
-    }
-  }
-  return results;
-}
+})
