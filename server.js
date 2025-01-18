@@ -152,7 +152,7 @@ app.post('/api/accounts', async (req, res) => {
       [user_id]
     );
     if (!userRow) {
-      throw new Error(`User not found with ID: ${user_id}`);
+      throw new Error(User not found with ID: ${user_id});
     }
 
     let currency_id;
@@ -591,7 +591,7 @@ app.get('/api/users/:userId/currencies', async (req, res) => {
 // ...existing code...
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(Server is running on port ${PORT});
 });
 
 
@@ -960,7 +960,7 @@ app.put('/api/complex/userCurrencies/:userId', async (req, res) => {
       [primary_currency_name]
     );
     if (!pRows || pRows.length === 0) {
-      throw new Error(`Primary currency not found: ${primary_currency_name}`);
+      throw new Error(Primary currency not found: ${primary_currency_name});
     }
     const primary_currency_id = pRows[0].currency_id;
 
@@ -970,7 +970,7 @@ app.put('/api/complex/userCurrencies/:userId', async (req, res) => {
       [secondary_currency_name]
     );
     if (!sRows || sRows.length === 0) {
-      throw new Error(`Secondary currency not found: ${secondary_currency_name}`);
+      throw new Error(Secondary currency not found: ${secondary_currency_name});
     }
     const secondary_currency_id = sRows[0].currency_id;
 
@@ -1030,4 +1030,4 @@ app.delete('/api/complex/clearUser/:userId', async (req, res) => {
   } finally {
     conn.release();
   }
-});
+})
