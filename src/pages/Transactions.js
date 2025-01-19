@@ -12,10 +12,6 @@ function Transactions() {
   const { transactions, transactionsGrouped, availableMonths, handleSave, handleDelete } =
     useTransactions();
 
-    console.log(transactions);
-    console.log(transactionsGrouped);
-    console.log(availableMonths);
-
 
   //-------------------------------------logic for the monthly switcher---------------
 
@@ -116,25 +112,21 @@ function Transactions() {
       
       <div>
         {currentMonthTransactions.map((txn) => (
-          <TransactionBox key={txn.transaction_id}>
-            <Transaction
-              date={txn.transaction_date}
-              amount={txn.transaction_amount}
-              accountFrom={txn.from_account}
-              accountTo={txn.to_account}
-              transactionName={txn.transaction_name}
-              category={txn.transaction_category}
-              type={txn.transaction_type}
-              currency={txn.currency}
-              //we will focus only on the last two
-              //for every transaction we have a txn and a txn.id where we will use the edit and delete function that call hooks
-              onEdit={() => handleEdit(txn)}
-              //on delete it changes the transactions using a hook
-              //changed transactions implies change in sortedtransaction implies change in groupedtransactions implies change current group and then change in currentmonthtransaction
-              onDelete={() => handleDelete(txn.transaction_id)}
-            />
-          </TransactionBox>
-        ))}
+        <TransactionBox key={txn.transaction_id}>
+          <Transaction
+            date={txn.transaction_date}
+            amount={txn.transaction_amount}
+            accountFrom={txn.from_account}
+            accountTo={txn.to_account}
+            transactionName={txn.transaction_name}
+            category={txn.transaction_category}
+            type={txn.transaction_type}
+            currency={txn.currency_symbol}
+            onEdit={() => handleEdit(txn)}
+            onDelete={() => handleDelete(txn.transaction_id)}
+          />
+        </TransactionBox>
+      ))}
       </div>
     </>
   );

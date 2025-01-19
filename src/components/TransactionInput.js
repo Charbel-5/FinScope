@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './TransactionInput.css';
 
 function TransactionInput({ onClose, onSave, initialTransaction }) {
   const [transactionType, setTransactionType] = useState(
-    initialTransaction?.transaction_type || 'income'
+    initialTransaction?.transaction_type || 'Income'
   );
 
   const [formData, setFormData] = useState({
@@ -16,6 +17,10 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
     transaction_category: initialTransaction?.transaction_category || '',
     currency: initialTransaction?.currency || 'USD',
   });
+
+  const [accounts, setAccounts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [currencySymbol, setCurrencySymbol] = useState('');
 
   useEffect(() => {
     if (initialTransaction) {
@@ -32,6 +37,54 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
       });
     }
   }, [initialTransaction]);
+
+  useEffect(() => {
+    // Fetch user accounts
+    async function fetchAccounts() {
+      const userId = 2; // or dynamic
+      const res = await axios.get(`/api/accounts/${userId}`);
+      setAccounts(res.data);
+    }
+    fetchAccounts();
+  }, []);
+
+  useEffect(() => {
+    // Fetch categories by transaction type
+    async function fetchCategories() {
+      try {
+        const res = await axios.get(`/api/transaction_categories`); 
+        // Filter them if needed for type
+        const typeLower = transactionType.toLowerCase();
+        const filtered = res.data.filter(cat => {
+          if (typeLower === 'income') return cat.transaction_type_id === 1; // example
+          if (typeLower === 'expense') return cat.transaction_type_id === 2;
+          if (typeLower === 'transfer') return cat.transaction_type_id === 3;
+          return false;
+        });
+        setCategories(filtered);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    }
+    fetchCategories();
+  }, [transactionType]);
+
+  useEffect(() => {
+    // Fetch currency of from_account
+    async function fetchCurrency() {
+      try {
+        if (formData.from_account) {
+          const userId = 2; // or dynamic
+          const res = await axios.get(`/api/accounts/${userId}/currencySymbol/${formData.from_account}`);
+          setCurrencySymbol(res.data.currency_symbol || '');
+          setFormData(prev => ({ ...prev, currency: res.data.currency_symbol || '' }));
+        }
+      } catch (err) {
+        console.error('Error fetching currency:', err);
+      }
+    }
+    fetchCurrency();
+  }, [formData.from_account]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -54,22 +107,22 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="switches">
           <button
-            className={transactionType === 'income' ? 'active' : ''}
-            onClick={() => setTransactionType('income')}
+            className={transactionType === 'Income' ? 'active' : ''}
+            onClick={() => setTransactionType('Income')}
             type="button"
           >
             Income
           </button>
           <button
-            className={transactionType === 'expense' ? 'active' : ''}
-            onClick={() => setTransactionType('expense')}
+            className={transactionType === 'Expense' ? 'active' : ''}
+            onClick={() => setTransactionType('Expense')}
             type="button"
           >
             Expense
           </button>
           <button
-            className={transactionType === 'transfer' ? 'active' : ''}
-            onClick={() => setTransactionType('transfer')}
+            className={transactionType === 'Transfer' ? 'active' : ''}
+            onClick={() => setTransactionType('Transfer')}
             type="button"
           >
             Transfer
@@ -78,13 +131,16 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
 
         <form onSubmit={handleSubmit}>
           <input
+            type="date"
             name="transaction_date"
+            max={new Date().toISOString().split('T')[0]}
             value={formData.transaction_date}
             onChange={handleChange}
-            placeholder="Date"
           />
           <input
             name="transaction_amount"
+            type="number"
+            step="0.01"
             value={formData.transaction_amount}
             onChange={handleChange}
             placeholder="Amount"
@@ -95,31 +151,49 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
             onChange={handleChange}
             placeholder="Description"
           />
-          <input
+          <select
             name="from_account"
             value={formData.from_account}
             onChange={handleChange}
-            placeholder="Account From"
-          />
-          {transactionType === 'transfer' && (
-            <input
+          >
+            <option value="">Select From Account</option>
+            {accounts.map(acc => (
+              <option key={acc.account_id} value={acc.name}>{acc.name}</option>
+            ))}
+          </select>
+          {transactionType === 'Transfer' && (
+            <select
               name="to_account"
               value={formData.to_account}
               onChange={handleChange}
-              placeholder="Account To"
-            />
+            >
+              <option value="">Select To Account</option>
+              {accounts.map(acc => (
+                <option key={acc.account_id} value={acc.name}>{acc.name}</option>
+              ))}
+            </select>
           )}
-          <input
-            name="transaction_category"
-            value={formData.transaction_category}
-            onChange={handleChange}
-            placeholder="Category"
-          />
+          {transactionType !== 'Transfer' && (
+              <select
+              name="transaction_category"
+              value={formData.transaction_category}
+              onChange={handleChange}
+            >
+              <option value="">Select Category</option>
+              {categories.map((cat) => (
+                <option key={cat.transaction_category_id} value={cat.transaction_category_de}>
+                  {cat.transaction_category_de}
+                </option>
+              ))}
+            </select>
+          )
+
+          }
+          
           <input
             name="currency"
             value={formData.currency}
-            onChange={handleChange}
-            placeholder="Currency"
+            readOnly
           />
           <button type="submit">Submit</button>
         </form>

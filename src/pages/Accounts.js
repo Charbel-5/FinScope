@@ -8,7 +8,7 @@ import config from '../Config';
 import './Accounts.css';
 
 function Accounts() {
-  const userId = 1; // Replace with the actual user ID
+  const userId = 3; // Replace with the actual user ID
   const { groupedAccounts, assets, liabilities, total, loading, error } = useAccounts(userId);
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [showForm, setShowForm] = useState(false);

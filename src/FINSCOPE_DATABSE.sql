@@ -172,7 +172,7 @@ CREATE TABLE `account` (
 
     `name`         VARCHAR(200) NOT NULL,  -- matches diagram label "Name"
 
-    `total_amount` DECIMAL(15,5) NOT NULL,
+    `total_amount` DECIMAL(15,2) NOT NULL,
  
     `account_type_id` INT NOT NULL,
 
@@ -242,7 +242,7 @@ CREATE TABLE `transaction` (
 
     `transaction_date`   DATE         NOT NULL,
 
-    `transaction_amount` DECIMAL(15,5) NOT NULL,
+    `transaction_amount` DECIMAL(15,2) NOT NULL,
 
     `transaction_name`   VARCHAR(200) NOT NULL,
  

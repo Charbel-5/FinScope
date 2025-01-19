@@ -656,12 +656,14 @@ app.get('/api/complex/transactions/:userId', async (req, res) => {
         tt.transaction_type_description AS transaction_type,
         cat.transaction_category_de AS transaction_category,
         acctFrom.name AS from_account,
-        acctTo.name AS to_account
+        acctTo.name AS to_account,
+        c.symbol AS currency_symbol
       FROM transaction t
       LEFT JOIN transaction_type tt ON t.transaction_type_id = tt.transaction_type_id
       LEFT JOIN transaction_category cat ON t.transaction_category_id = cat.transaction_category_id
       LEFT JOIN account acctFrom ON t.from_account_id = acctFrom.account_id
       LEFT JOIN account acctTo ON t.to_account_id = acctTo.account_id
+      LEFT JOIN currency c ON acctFrom.currency_id = c.currency_id
       WHERE t.user_id = ?
     `;
     const [rows] = await pool.query(query, [userId]);
@@ -829,7 +831,7 @@ app.post('/api/complex/transaction', async (req, res) => {
       // If the category doesn't exist, create a new one
       const [newCategoryResult] = await conn.query(
         'INSERT INTO transaction_category (transaction_category_de, user_id, transaction_type_id) VALUES (?, ?, ?)',
-        [transaction_category, existingTx.user_id, transaction_type_id]
+        [transaction_category, user_id, transaction_type_id]
       );
       transaction_category_id = newCategoryResult.insertId;
     }
@@ -858,8 +860,8 @@ app.post('/api/complex/transaction', async (req, res) => {
       to_account_id = toAccountRow.account_id;
     }
 
-    // 3) Update the transaction with the new foreign keys and other fields
-      const insertSql = `
+    // 3) Insert the transaction with the new foreign keys and other fields
+    const insertSql = `
       INSERT INTO transaction (
         transaction_date,
         transaction_amount,
@@ -889,12 +891,34 @@ app.post('/api/complex/transaction', async (req, res) => {
   } catch (err) {
     console.error(err);
     await conn.rollback();
-    res.status(500).send('Error editing complex transaction');
+    res.status(500).send('Error adding complex transaction');
   } finally {
     conn.release();
   }
 });
 
+
+
+
+app.get('/api/accounts/:userId/currencySymbol/:accountName', async (req, res) => {
+  const { userId, accountName } = req.params;
+  try {
+    const query = `
+      SELECT c.symbol AS currency_symbol
+      FROM account a
+      JOIN currency c ON a.currency_id = c.currency_id
+      WHERE a.user_id = ? AND a.name = ?
+    `;
+    const [rows] = await pool.query(query, [userId, accountName]);
+    if (!rows || rows.length === 0) {
+      return res.status(404).json({ error: 'Account not found or no currency symbol' });
+    }
+    res.json({ currency_symbol: rows[0].currency_symbol });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error retrieving currency symbol');
+  }
+});
 
 
 // ========================================

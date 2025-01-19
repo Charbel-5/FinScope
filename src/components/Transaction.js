@@ -19,12 +19,12 @@ function Transaction({
         <div className="transaction-meta">
           <span>{date}</span> | <span className={`type ${type}`}>{type}</span>
         </div>
-        {type === 'transfer' && (
+        {type === 'Transfer' && (
           <div className="transaction-accounts">
             From: {accountFrom} &rarr; To: {accountTo}
           </div>
         )}
-        {type !== 'transfer' && (
+        {type !== 'Transfer' && (
           <div className="transaction-accounts">
             Account: {accountFrom}
             | <span>{category}</span>
