@@ -1,8 +1,16 @@
 import React from 'react';
 import { useState } from 'react';
 
-function StockList({ data, onEdit, onDelete }) {
+function StockList({ data, onEdit, onDelete, loading, error }) {
   const [hoveredIndex, setHoveredIndex] = useState(null);
+
+  if (loading) {
+    return <div>Loading stock prices...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <div>

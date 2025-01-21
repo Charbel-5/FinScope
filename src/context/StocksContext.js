@@ -1,21 +1,56 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
+import { fetchStockPrices } from '../Services/StocksData';
 
 const StocksContext = createContext();
 
 function StocksProvider({ children }) {
-  // Example data arrays
-  const [stockHoldings, setStockHoldings] = useState([
-    { ticker: 'AAPL', quantity: 10 },
-    { ticker: 'TSLA', quantity: 5 },
-  ]);
+  const [stockHoldings, setStockHoldings] = useState([]);
+  const [stockPrices, setStockPrices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const [stockPrices, setStockPrices] = useState([
-    { ticker: 'AAPL', price: 175 },
-    { ticker: 'TSLA', price: 200 },
-    { ticker: 'MSFT', price: 310 },
-  ]);
+  const userId = 2; // Should come from auth context
 
-  // Maps holdings to prices by ticker
+  // Fetch holdings from database
+  useEffect(() => {
+    async function fetchHoldings() {
+      try {
+        const response = await axios.get(`/api/user_stocks/${userId}`);
+        setStockHoldings(response.data.map(holding => ({
+          ticker: holding.stock_ticker,
+          quantity: holding.stock_amount
+        })));
+      } catch (err) {
+        console.error('Failed to fetch stock holdings:', err);
+        setError('Failed to fetch stock holdings');
+      }
+    }
+    fetchHoldings();
+  }, [userId]);
+
+  // Fetch prices whenever holdings change
+  useEffect(() => {
+    async function updatePrices() {
+      if (stockHoldings.length === 0) return;
+      
+      setLoading(true);
+      try {
+        const tickers = stockHoldings.map(h => h.ticker);
+        const prices = await fetchStockPrices(tickers);
+        setStockPrices(prices);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch stock prices:', err);
+        setError('Failed to fetch stock prices');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    updatePrices();
+  }, [stockHoldings]);
+
   function mapHoldingsToPrices() {
     return stockHoldings.map((holding) => {
       const matching = stockPrices.find((p) => p.ticker === holding.ticker);
@@ -28,26 +63,68 @@ function StocksProvider({ children }) {
     });
   }
 
-  // Calculates total portfolio value
   function getTotalValue() {
     return mapHoldingsToPrices().reduce((sum, h) => sum + h.totalValue, 0);
   }
 
-  // Adds a new holding
-  function addStock(ticker, quantity) {
-    setStockHoldings((prev) => [...prev, { ticker, quantity: parseFloat(quantity) }]);
+  async function addStock(ticker, quantity) {
+    try {
+      await axios.post('/api/user_stocks', {
+        stock_ticker: ticker.toUpperCase(),
+        stock_amount: parseFloat(quantity),
+        user_id: userId
+      });
+      
+      setStockHoldings(prev => [...prev, { 
+        ticker: ticker.toUpperCase(), 
+        quantity: parseFloat(quantity) 
+      }]);
+    } catch (err) {
+      console.error('Failed to add stock:', err);
+      throw err;
+    }
   }
 
-  function editStock(oldTicker, newTicker, newQuantity) {
-    setStockHoldings((prev) => 
-      prev.map((s) => 
-        s.ticker === oldTicker ? { ticker: newTicker, quantity: parseFloat(newQuantity) } : s
-      )
-    );
+  async function editStock(oldTicker, newTicker, newQuantity) {  
+    try {
+      // Find the stock_id first
+      const response = await axios.get(`/api/user_stocks/${userId}`);
+      const stock = response.data.find(s => s.stock_ticker === oldTicker);
+      
+      if (!stock) throw new Error('Stock not found');
+
+      await axios.put(`/api/user_stocks/${stock.stock_id}`, {
+        stock_ticker: newTicker.toUpperCase(),
+        stock_amount: parseFloat(newQuantity),
+        user_id: userId
+      });
+
+      setStockHoldings(prev => 
+        prev.map(s => 
+          s.ticker === oldTicker 
+            ? { ticker: newTicker.toUpperCase(), quantity: parseFloat(newQuantity) } 
+            : s
+        )
+      );
+    } catch (err) {
+      console.error('Failed to edit stock:', err);
+      throw err;
+    }
   }
-  
-  function deleteStock(ticker) {
-    setStockHoldings((prev) => prev.filter((s) => s.ticker !== ticker));
+
+  async function deleteStock(ticker) {
+    try {
+      const response = await axios.get(`/api/user_stocks/${userId}`);
+      const stock = response.data.find(s => s.stock_ticker === ticker);
+      
+      if (!stock) throw new Error('Stock not found');
+
+      await axios.delete(`/api/user_stocks/${stock.stock_id}`);
+      setStockHoldings(prev => prev.filter(s => s.ticker !== ticker));
+    } catch (err) {
+      console.error('Failed to delete stock:', err);
+      throw err;
+    }
   }
 
   return (
@@ -60,6 +137,8 @@ function StocksProvider({ children }) {
         addStock,
         editStock,
         deleteStock,
+        loading,
+        error
       }}
     >
       {children}
@@ -67,7 +146,6 @@ function StocksProvider({ children }) {
   );
 }
 
-// Hook to use the context
 function useStocks() {
   return useContext(StocksContext);
 }
