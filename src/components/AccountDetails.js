@@ -5,21 +5,20 @@ import Transaction from './Transaction';
 import TransactionInput from './TransactionInput.js';
 import { useTransactions } from '../context/TransactionsContext';
 
-
 // Helper to filter transactions for a specific account
 function getAccountTransactions(transactions, accountName) {
   return transactions.filter((txn) => {
-    if (txn.type === 'income' || txn.type === 'expense') {
-      return txn.accountFrom === accountName;
+    if (txn.transaction_type === 'Income' || txn.transaction_type === 'Expense') {
+      return txn.from_account === accountName;
     }
-    // For transfers, check both 'accountFrom' & 'accountTo'
-    return txn.accountFrom === accountName || txn.accountTo === accountName;
+    // For transfers, check both 'from_account' & 'to_account'
+    return txn.from_account === accountName || txn.to_account === accountName;
   });
 }
 
 function AccountDetails({ accountName, onClose }) {
   // Always call your custom hook at the top
-  const { transactionsGrouped, availableMonths, handleSave, handleDelete,transactions } = useTransactions();
+  const { transactions, handleSave, handleDelete } = useTransactions();
 
   // Always call useState at the top level
   const [showForm, setShowForm] = useState(false);
@@ -45,18 +44,18 @@ function AccountDetails({ accountName, onClose }) {
 
         <div className="account-details-content">
           {filteredTransactions.map((txn) => (
-            <TransactionBox key={txn.id}>
+            <TransactionBox key={txn.transaction_id}>
               <Transaction
-                date={txn.date}
-                amount={txn.amount}
-                accountFrom={txn.accountFrom}
-                accountTo={txn.accountTo}
-                transactionName={txn.transactionName}
-                category={txn.category}
-                type={txn.type}
-                currency={txn.currency}
+                date={txn.transaction_date}
+                amount={txn.transaction_amount}
+                accountFrom={txn.from_account}
+                accountTo={txn.to_account}
+                transactionName={txn.transaction_name}
+                category={txn.transaction_category}
+                type={txn.transaction_type}
+                currency={txn.currency_symbol}
                 onEdit={() => handleEdit(txn)}
-                onDelete={() => handleDelete(txn.id)}
+                onDelete={() => handleDelete(txn.transaction_id)}
               />
             </TransactionBox>
           ))}
@@ -79,5 +78,3 @@ function AccountDetails({ accountName, onClose }) {
 }
 
 export default AccountDetails;
-
- 

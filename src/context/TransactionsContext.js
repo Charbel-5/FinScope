@@ -36,29 +36,21 @@ function useTransactionsLogic() {
     return date.toLocaleString('default', { month: 'long', year: 'numeric' });
   });
 
-  // ...existing code...
-async function handleSave(updatedTxn) {
-  console.log(updatedTxn.transaction_id);
-  try {
-    if (updatedTxn.transaction_id) {
-      await axios.put(`/api/complex/transaction/${updatedTxn.transaction_id}`, updatedTxn);
-      /*setTransactions(prev =>
-        prev.map(t =>
-          t.transaction_id === updatedTxn.transaction_id ? { ...t, ...updatedTxn } : t
-        )
-      );*/
-      var response = await axios.get(`/api/complex/transactions/${userId}`); //get the updated transactions
-      console.log(response.data);
-      setTransactions(response.data);
-    } else {
-      const response = await axios.post(`/api/complex/transaction`, { ...updatedTxn, user_id: userId });
-      const newTransaction = { ...updatedTxn, transaction_id: response.data.transaction_id };
-      setTransactions(prev => [...prev, newTransaction]);
+  async function handleSave(updatedTxn) {
+    try {
+      if (updatedTxn.transaction_id) {
+        await axios.put(`/api/complex/transaction/${updatedTxn.transaction_id}`, updatedTxn);
+        const response = await axios.get(`/api/complex/transactions/${userId}`);
+        setTransactions(response.data);
+      } else {
+        const response = await axios.post(`/api/complex/transaction`, { ...updatedTxn, user_id: userId });
+        const newTransaction = { ...updatedTxn, transaction_id: response.data.transaction_id };
+        setTransactions(prev => [...prev, newTransaction]);
+      }
+    } catch (err) {
+      setError(err);
     }
-  } catch (err) {
-    setError(err);
   }
-}
 
   const handleDelete = async (id) => {
     try {
