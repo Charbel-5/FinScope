@@ -1,10 +1,18 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import './MainNavbar.css';
 
 function MainNavbar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const isDropdownActive = ['/settings', '/debt-calculator', '/stocks'].includes(location.pathname);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <div className="topnav">
@@ -21,7 +29,7 @@ function MainNavbar() {
         </div>
       </div>
 
-      <Link to="#" className="logout">Log Out</Link>
+      <button className="logout" onClick={handleLogout}>Log Out</button>
     </div>
   );
 }

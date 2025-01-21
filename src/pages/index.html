@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>FinScope</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="index,follow">
+  <meta name="generator" content="GrapesJS Studio">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Poppins:wght@600&display=swap" 
+    rel="stylesheet"
+  >
+
+  <style>
+    /*******************************************
+     * RESET STYLES
+     *******************************************/
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    ul, li {
+      list-style: none;
+    }
+
+    /*******************************************
+     * VARIABLES
+     *******************************************/
+    :root {
+      --font-heading: 'Poppins', sans-serif;
+      --font-body: 'Open Sans', sans-serif;
+      --color-primary: #0f9d58;        /* original green */
+      --color-primary-dark: #0a7c49;   /* darker green for hover */
+      --color-bg: #f5f6f7;            /* light background */
+      --color-section-bg: #ffffff;    /* white for sections */
+      --color-text: #232a31;          /* dark text */
+      --color-border: #dcdcdc;        /* light border color */
+      --color-hover: #e9f5ee;         /* subtle hover background */
+      --color-accent: #4285f4;        /* optional accent (blue) */
+    }
+
+    /*******************************************
+     * GLOBAL STYLES
+     *******************************************/
+    body {
+      font-family: var(--font-body);
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+    }
+    h1, h2, h3 {
+      font-family: var(--font-heading);
+    }
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    img {
+      max-width: 100%;
+      display: block;
+    }
+    p {
+      margin-bottom: 1rem;
+    }
+
+    /*******************************************
+     * NAVIGATION
+     *******************************************/
+    .navbar {
+      width: 100%;
+      background-color: #ffffff; 
+      border-bottom: 2px solid var(--color-primary);
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 999; /* keep navbar on top */
+    }
+    .navbar__container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+    .navbar__brand {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--color-primary-dark);
+      letter-spacing: 1px;
+    }
+    .navbar__search {
+      position: relative;
+      margin-left: 1rem;
+    }
+    .navbar__search input {
+      width: 240px;
+      padding: 6px 35px 6px 10px;
+      border: 1px solid #dcdcdc;
+      border-radius: 4px;
+      outline: none;
+      font-size: 0.9rem;
+    }
+    .navbar__search__icon {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .navbar__actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .navbar__link {
+      color: var(--color-text);
+      font-weight: 500;
+      font-size: 0.95rem;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    .navbar__link:hover {
+      background-color: var(--color-hover);
+    }
+    .btn--signup {
+      background-color: var(--color-primary);
+      color: #fff;
+      font-weight: 600;
+      border-radius: 4px;
+      padding: 8px 12px;
+      transition: background-color 0.3s;
+    }
+    .btn--signup:hover {
+      background-color: var(--color-primary-dark);
+    }
+    /* Burger (mobile) */
+    .navbar__burger {
+      display: none;
+      cursor: pointer;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .navbar__burger-line {
+      width: 25px;
+      height: 3px;
+      background: var(--color-text);
+    }
+    .navbar__items {
+      display: none;
+    }
+    .navbar__items.visible {
+      position: absolute;
+      top: 60px;
+      right: 0;
+      background-color: #ffffff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+      flex-direction: column;
+      width: 150px;
+      padding: 10px 0;
+    }
+    .navbar__items.visible a {
+      display: block;
+      margin: 0.5rem 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .navbar__search {
+        display: none;
+      }
+      .navbar__actions {
+        display: none;
+      }
+      .navbar__burger {
+        display: flex;
+      }
+    }
+
+    /*******************************************
+     * HERO SECTION
+     *******************************************/
+    .hero {
+      width: 100%;
+      height: 80vh;
+      background: 
+        linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
+        url('https://images.pexels.com/photos/3184638/pexels-photo-3184638.jpeg?auto=compress&cs=tinysrgb&w=1600') 
+          center/cover no-repeat;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0 1rem;
+      margin-top: 60px; /* Because navbar is fixed */
+    }
+    .hero__content {
+      color: #ffffff;
+      max-width: 800px;
+    }
+    .hero__title {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    .hero__subtitle {
+      font-size: 1.2rem;
+      font-weight: 400;
+      margin-bottom: 2rem;
+    }
+    .hero__btn {
+      background-color: var(--color-primary);
+      color: #fff;
+      padding: 1rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .hero__btn:hover {
+      background-color: var(--color-primary-dark);
+    }
+
+    /*******************************************
+     * SECTIONS
+     *******************************************/
+    .section {
+      width: 100%;
+      background-color: var(--color-section-bg);
+      padding: 60px 1rem;
+    }
+    .section__container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .section__title {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      text-align: center;
+      color: var(--color-text);
+      font-weight: 600;
+    }
+    .section__subtitle {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #555;
+      font-style: italic;
+    }
+
+    /*******************************************
+     * GRID ROWS
+     *******************************************/
+    .grid-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto 40px auto;
+      padding: 0 1rem;
+    }
+    .grid-col {
+      flex: 1 1 300px;
+      background-color: #fff;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 20px;
+      min-height: 250px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .grid-col:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    }
+    .grid-col h2 {
+      margin-bottom: 10px;
+      font-weight: 600;
+      font-size: 1.2rem;
+      color: var(--color-text);
+    }
+    .grid-col p {
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+    .image-box {
+      width: 100%;
+      height: 180px;
+      margin-top: 10px;
+      background-color: #f0f0f0;
+      border-radius: 4px;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+    }
+
+    /*******************************************
+     * LISTS
+     *******************************************/
+    ul {
+      list-style: disc;
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    li {
+      margin-bottom: 0.5rem;
+      line-height: 1.4;
+    }
+
+    /*******************************************
+     * FOOTER (Optional)
+     *******************************************/
+    .footer {
+      background-color: #f1f1f1;
+      padding: 30px 1rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #666;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar__container">
+      <!-- Brand + Search -->
+      <div style="display: flex; align-items: center;">
+        <div class="navbar__brand">FinScope</div>
+        <div class="navbar__search">
+          <input type="text" placeholder="Search...">
+          <span class="navbar__search__icon">&#128269;</span>
+        </div>
+      </div>
+      <!-- Links -->
+      <div class="navbar__actions">
+        <a href="#" class="navbar__link">Login</a>
+        <a href="#" class="btn--signup">Sign Up</a>
+      </div>
+      <!-- Burger button (mobile) -->
+      <div class="navbar__burger" id="burgerBtn">
+        <div class="navbar__burger-line"></div>
+        <div class="navbar__burger-line"></div>
+        <div class="navbar__burger-line"></div>
+      </div>
+    </div>
+    <!-- Mobile menu -->
+    <div class="navbar__items" id="mobileMenu">
+      <a href="#" class="navbar__link">Login</a>
+      <a href="#" class="btn--signup">Sign Up</a>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="hero__content">
+      <h1 class="hero__title">Welcome to FinScope</h1>
+      <p class="hero__subtitle">
+        Emphasizing clarity and oversight in financial management.
+      </p>
+      <a href="#" class="hero__btn">Get Started</a>
+    </div>
+  </section>
+
+  <!-- WELCOME SECTION -->
+  <section class="section">
+    <div class="section__container">
+      <h2 class="section__title">Your Finance, Simplified</h2>
+      <p class="section__subtitle">"Emphasizing clarity and oversight in financial management"</p>
+    </div>
+  </section>
+
+  <!-- EXAMPLE GRID ROW 1 -->
+  <div class="grid-row">
+    <div class="grid-col">
+      <h2>Smart Financial Management</h2>
+      <p>
+        Dual Currency Support allows you to input transactions in different currencies while showing 
+        total balances in your main currency.
+      </p>
+      <div class="image-box"
+           style="background-image: url('https://images.pexels.com/photos/2121640/pexels-photo-2121640.jpeg?auto=compress&cs=tinysrgb&w=500&dpr=2');">
+      </div>
+    </div>
+    <div class="grid-col">
+      <h2>Customized Accounts</h2>
+      <p>
+        Create multiple account types, such as cash, savings, loans, and more. Record income, 
+        expenses, and inter-account transfers seamlessly.
+      </p>
+      <div class="image-box"
+           style="background-image: url('https://images.pexels.com/photos/2121640/pexels-photo-2121640.jpeg?auto=compress&cs=tinysrgb&w=500&dpr=2');">
+      </div>
+    </div>
+  </div>
+
+  <!-- EXAMPLE GRID ROW 2 -->
+  <div class="grid-row">
+    <div class="grid-col">
+      <h2>Visual Insights</h2>
+      <p>
+        View financial data with clear, interactive charts and graphs. Analyze spending trends 
+        and saving habits easily.
+      </p>
+      <div class="image-box"
+           style="background-image: url('https://images.pexels.com/photos/2121640/pexels-photo-2121640.jpeg?auto=compress&cs=tinysrgb&w=500&dpr=2');">
+      </div>
+    </div>
+    <div class="grid-col">
+      <h2>Stock Monitoring in Real-Time</h2>
+      <p>
+        Track live stock values and monitor your portfolio’s performance.
+      </p>
+      <div class="image-box"
+           style="background-image: url('https://images.pexels.com/photos/2121640/pexels-photo-2121640.jpeg?auto=compress&cs=tinysrgb&w=500&dpr=2');">
+      </div>
+    </div>
+  </div>
+
+  <!-- EXAMPLE GRID ROW 3 -->
+  <div class="grid-row">
+    <div class="grid-col">
+      <h2>Exportable Reports</h2>
+      <p>
+        Need a record of your financial activities? Export detailed Excel reports with just 
+        one click. Share them with your accountant or keep them for your records.
+      </p>
+      <div class="image-box"
+           style="background-image: url('https://images.pexels.com/photos/2121640/pexels-photo-2121640.jpeg?auto=compress&cs=tinysrgb&w=500&dpr=2');">
+      </div>
+    </div>
+    <div class="grid-col">
+      <h2>Debt Comparison</h2>
+      <p>
+        Compare debts by interest rates and repayment schedules. Plan strategies to prioritize 
+        and reduce debt efficiently.
+      </p>
+      <div class="image-box"
+           style="background-image: url('https://images.pexels.com/photos/2121640/pexels-photo-2121640.jpeg?auto=compress&cs=tinysrgb&w=500&dpr=2');">
+      </div>
+    </div>
+  </div>
+
+  <!-- WHY CHOOSE FINSCOPE? -->
+  <section class="section">
+    <div class="section__container">
+      <h2 class="section__title">Why Choose FinScope?</h2>
+      <ul>
+        <li>User-friendly design that makes financial tracking simple.</li>
+        <li>Advanced features like dual currency support and real-time data.</li>
+        <li>Everything you need to master your finances—in one app.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="section">
+    <div class="section__container">
+      <h2 class="section__title">Start Your Journey to Financial Freedom</h2>
+      <ul>
+        <li><strong>Debt Tracking Made Simple</strong>: Stay on top of your obligations with our intuitive debt tracker. Compare and manage your debts to make smarter repayment decisions.</li>
+      </ul>
+      <p>Download FinScope today and take the first step toward smarter money management. Your finances, reimagined.</p>
+      <div style="text-align: center; margin-top: 2rem;">
+        <a href="#" class="btn--signup" style="padding: 1rem 2rem; font-size: 1rem; text-transform: uppercase;">
+          Download Now
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER (OPTIONAL) -->
+  <footer class="footer">
+    <p>&copy; 2025 FinScope. All rights reserved.</p>
+  </footer>
+
+  <!-- JAVASCRIPT FOR MOBILE MENU -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const burgerBtn = document.getElementById('burgerBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+
+      burgerBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('visible');
+      });
+    });
+  </script>
+</body>
+</html>

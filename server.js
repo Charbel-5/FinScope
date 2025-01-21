@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const pool = require('./src/db');
+const path = require('path'); // ensure we have "path" imported
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,6 +12,16 @@ app.use(bodyParser.json());
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+});
+
+// Serve index.html by default
+app.get('/', (req, res) => {
+  res.sendFile(path.resolve(__dirname, 'public/index.html'));
+});
+
+// Serve a separate login page with no menu
+app.get('/login', (req, res) => {
+  res.sendFile(path.resolve(__dirname, 'public/login.html'));
 });
 
 // =============================
@@ -1052,3 +1063,86 @@ app.delete('/api/complex/clearUser/:userId', async (req, res) => {
     conn.release();
   }
 })
+
+
+
+
+
+
+// Add these lines near the top
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const SECRET_KEY = process.env.JWT_SECRET || 'CHANGE_THIS_SECRET';
+
+
+// New endpoint: Register
+app.post('/api/register', async (req, res) => {
+  const { email, password, user_name } = req.body;
+  try {
+    const hashed = await bcrypt.hash(password, 10);
+    await pool.query(
+      `INSERT INTO users (email, password, user_name, primary_currency_id, secondary_currency_id)
+       VALUES (?, ?, ?, 1, 2)`,
+      [email, hashed, user_name]
+    );
+    res.sendStatus(201);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error registering user');
+  }
+});
+
+// New endpoint: Login
+app.post('/api/login', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    // Find user by email
+    const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    
+    if (rows.length === 0) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const user = rows[0];
+    
+    // Compare password
+    const match = await bcrypt.compare(password, user.password);
+    
+    if (!match) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        userId: user.user_id,
+        userName: user.user_name 
+      }, 
+      SECRET_KEY, 
+      { expiresIn: '24h' }
+    );
+
+    // Send response
+    res.json({
+      token,
+      userId: user.user_id,
+      userName: user.user_name
+    });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ message: 'Server error during login' });
+  }
+});
+
+// Optional: Example route to verify token
+app.get('/api/protected', (req, res) => {
+  const header = req.headers.authorization;
+  if (!header) return res.status(401).send('Missing token');
+  const token = header.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+    res.json({ message: 'Access granted', userId: decoded.userId });
+  } catch (err) {
+    res.status(403).send('Invalid or expired token');
+  }
+});
