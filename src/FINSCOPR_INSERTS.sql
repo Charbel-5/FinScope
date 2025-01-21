@@ -360,8 +360,6 @@ INSERT INTO transaction_category (
 
     transaction_category_de,
 
-    user_id,
-
     transaction_type_id
 
 )
@@ -372,31 +370,31 @@ VALUES
 
     -- Income categories (transaction_type_id = 1)
 
-    ('Allowance',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 1),
+    ('Allowance', 1),
 
-    ('Salary',     (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 1),
+    ('Salary', 1),
 
-    ('Petty cash', (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 1),
+    ('Petty cash', 1),
 
-    ('Bonus',      (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 1),
+    ('Bonus', 1),
  
     -- Expense categories (transaction_type_id = 2)
 
-    ('Transport',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+    ('Transport',  2),
 
-    ('Food',       (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+    ('Food',   2),
 
-    ('Groceries',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+    ('Groceries',  2),
 
-    ('Health',     (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+    ('Health', 2),
 
-    ('Education',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+    ('Education',  2),
 
-    ('Apparel',    (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+    ('Apparel', 2),
 
-    ('Household',  (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2),
+    ('Household',  2),
 
-    ('Gift',       (SELECT user_id FROM users WHERE email = 'system@dummy.com'), 2);
+    ('Gift',   2);
 
 
  

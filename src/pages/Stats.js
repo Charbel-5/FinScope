@@ -8,11 +8,18 @@ import './Stats.css';
 
 function transformAllTransactionsForStockChart(allTransactions) {
   let running = 0;
-  const sorted = [...allTransactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+  const sorted = [...allTransactions].sort((a, b) => new Date(a.transaction_date) - new Date(b.transaction_date));
   return sorted.map(txn => {
-    if (txn.type === 'income') running += parseFloat(txn.amount);
-    else if (txn.type === 'expense') running -= parseFloat(txn.amount);
-    return { date: txn.date, close: running };
+    // Use the correct fields from transaction data
+    if (txn.transaction_type === 'Income') {
+      running += parseFloat(txn.transaction_amount);
+    } else if (txn.transaction_type === 'Expense') {
+      running -= parseFloat(txn.transaction_amount); 
+    }
+    return { 
+      date: txn.transaction_date,
+      close: running 
+    };
   });
 }
 
@@ -39,9 +46,16 @@ function Stats() {
   const currentGroup = transactionsGrouped[currentIndex] || {};
   const dailyData = transformMonthTransactionsToDailyData(currentGroup.transactions || []);
 
-  // Calculate totals
-  const totalIncome = dailyData.reduce((sum, d) => sum + d.income, 0);
-  const totalExpense = dailyData.reduce((sum, d) => sum + d.expense, 0);
+  // Calculate totals from the transactions directly
+  const monthlyTransactions = currentGroup.transactions || [];
+  const totalIncome = monthlyTransactions
+    .filter(t => t.transaction_type === 'Income')
+    .reduce((sum, t) => sum + parseFloat(t.transaction_amount), 0);
+
+  const totalExpense = monthlyTransactions
+    .filter(t => t.transaction_type === 'Expense')
+    .reduce((sum, t) => sum + parseFloat(t.transaction_amount), 0);
+
   const netBalance = totalIncome - totalExpense;
 
   // Prepare pie chart data

@@ -5,6 +5,12 @@
 --
 
 SET FOREIGN_KEY_CHECKS = 0;
+
+
+CREATE DATABASE finscope;
+
+USE finscope;
+ 
  
 -- =====================
 
@@ -114,20 +120,10 @@ CREATE TABLE `transaction_category` (
 
     `transaction_category_de` VARCHAR(200) NOT NULL,
 
-    `user_id`                 INT NOT NULL,
-
     `transaction_type_id`     INT NOT NULL,
 
     PRIMARY KEY (`transaction_category_id`),
- 
-    CONSTRAINT `fk_trans_cat_user`
 
-      FOREIGN KEY (`user_id`)
-
-      REFERENCES `users` (`user_id`)
-
-      ON DELETE CASCADE,
- 
     CONSTRAINT `fk_txn_cat_type`
 
       FOREIGN KEY (`transaction_type_id`)

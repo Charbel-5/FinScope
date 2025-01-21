@@ -54,17 +54,20 @@ export function transformMonthTransactionsToDailyData(transactions) {
   transactions.forEach(txn => {
     const day = new Date(txn.transaction_date).getDate();
     if (!dailyMap[day]) {
-      // zero income/expense for each new day
-      dailyMap[day] = { date: String(day).padStart(2, '0'), income: 0, expense: 0 };
+      dailyMap[day] = { 
+        date: String(day).padStart(2, '0'), 
+        income: 0, 
+        expense: 0 
+      };
     }
-    if (txn.transaction_type && txn.transaction_type.toLowerCase() === 'income') {
-      dailyMap[day].income += txn.transaction_amount;
-    } else if (txn.transaction_type && txn.transaction_type.toLowerCase() === 'expense') {
-      dailyMap[day].expense += txn.transaction_amount;
+    // Use transaction_type and transaction_amount from the actual data
+    if (txn.transaction_type === 'Income') {
+      dailyMap[day].income += parseFloat(txn.transaction_amount);
+    } else if (txn.transaction_type === 'Expense') {
+      dailyMap[day].expense += parseFloat(txn.transaction_amount);
     }
   });
 
-  // Return sorted by day ascending
   return Object.values(dailyMap).sort((a, b) => parseInt(a.date) - parseInt(b.date));
 }
 
