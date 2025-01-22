@@ -420,17 +420,19 @@ app.get('/api/currency_rates/:id', async (req, res) => {
 // Create currency_rate
 app.post('/api/currency_rates', async (req, res) => {
   const { conversion_rate, start_date, user_id } = req.body;
+  
   try {
-    const dateObject = new Date(start_date); // Convert start_date to Date object
+    const formattedDate = new Date(start_date).toISOString().slice(0, 10);
+    
     await pool.query(
-      `INSERT INTO currency_rate (conversion_rate, start_date, user_id)
-       VALUES (?,?,?)`,
-      [conversion_rate, dateObject, user_id]
+      'INSERT INTO currency_rate (conversion_rate, start_date, user_id) VALUES (?, ?, ?)',
+      [parseFloat(conversion_rate), formattedDate, user_id]
     );
+    
     res.sendStatus(201);
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Error creating currency_rate');
+    console.error('Error creating currency rate:', err);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -541,18 +543,37 @@ app.post('/api/users', async (req, res) => {
 
 app.put('/api/users/:id', async (req, res) => {
   const { id } = req.params;
-  const { email, password, user_name, primary_currency_id, secondary_currency_id } = req.body;
+  const { email, user_name, password } = req.body;
+  
   try {
-    await pool.query(
-      `UPDATE users
-       SET email = ?,
-           password = ?,
-           user_name = ?,
-           primary_currency_id = ?,
-           secondary_currency_id = ?
-       WHERE user_id = ?`,
-      [email, password, user_name, primary_currency_id, secondary_currency_id, id]
-    );
+    // Build dynamic SQL query based on what's being updated
+    let sql = 'UPDATE users SET';
+    const params = [];
+    const updates = [];
+
+    if (email) {
+      updates.push(' email = ?');
+      params.push(email);
+    }
+    if (user_name) {
+      updates.push(' user_name = ?');
+      params.push(user_name);
+    }
+    if (password && password !== '********') {
+      // Hash new password if provided
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updates.push(' password = ?');
+      params.push(hashedPassword);
+    }
+
+    if (updates.length === 0) {
+      return res.sendStatus(400);
+    }
+
+    sql += updates.join(',') + ' WHERE user_id = ?';
+    params.push(id);
+
+    await pool.query(sql, params);
     res.sendStatus(200);
   } catch (err) {
     console.error(err);
@@ -978,50 +999,45 @@ app.put('/api/complex/userCurrencies/:userId', async (req, res) => {
   const { userId } = req.params;
   const { primary_currency_name, secondary_currency_name } = req.body;
   const conn = await pool.getConnection();
+  
   try {
     await conn.beginTransaction();
 
-    // Get primary currency ID
-    const [pRows] = await conn.query(
+    // Get currency IDs
+    const [[primaryCurrency]] = await conn.query(
       'SELECT currency_id FROM currency WHERE currency_name = ?',
       [primary_currency_name]
     );
-    if (!pRows || pRows.length === 0) {
-      throw new Error(`Primary currency not found: ${primary_currency_name}`);
-    }
-    const primary_currency_id = pRows[0].currency_id;
-
-    // Get secondary currency ID
-    const [sRows] = await conn.query(
+    
+    const [[secondaryCurrency]] = await conn.query(
       'SELECT currency_id FROM currency WHERE currency_name = ?',
       [secondary_currency_name]
     );
-    if (!sRows || sRows.length === 0) {
-      throw new Error(`Secondary currency not found: ${secondary_currency_name}`);
-    }
-    const secondary_currency_id = sRows[0].currency_id;
 
-    // Update user
+    if (!primaryCurrency || !secondaryCurrency) {
+      throw new Error('Currency not found');
+    }
+
+    // Update user currencies
     await conn.query(
-      `UPDATE users
-       SET primary_currency_id = ?,
-           secondary_currency_id = ?
+      `UPDATE users 
+       SET primary_currency_id = ?, 
+           secondary_currency_id = ? 
        WHERE user_id = ?`,
-      [primary_currency_id, secondary_currency_id, userId]
+      [primaryCurrency.currency_id, secondaryCurrency.currency_id, userId]
     );
 
-    // Delete everything except user, new currencies, and stocks
+    // Delete related data
     await conn.query('DELETE FROM transaction WHERE user_id = ?', [userId]);
     await conn.query('DELETE FROM account WHERE user_id = ?', [userId]);
-    await conn.query('DELETE FROM transaction_category WHERE user_id = ?', [userId]);
     await conn.query('DELETE FROM currency_rate WHERE user_id = ?', [userId]);
 
     await conn.commit();
     res.sendStatus(200);
   } catch (err) {
     await conn.rollback();
-    console.error(err);
-    res.status(500).send('Error updating user currencies');
+    console.error('Error updating currencies:', err);
+    res.status(500).json({ error: err.message });
   } finally {
     conn.release();
   }
