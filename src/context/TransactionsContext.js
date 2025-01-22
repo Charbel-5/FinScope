@@ -1,8 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { sortTransactionsByDateDescending, groupTransactionsByMonthFromCurrent } from '../Services/TransactionsData';
 import axios from 'axios';
-
-const userId = 2;
+import { useAuth } from './AuthContext';
 
 // Create a context
 const TransactionsContext = createContext(null);
@@ -12,11 +11,13 @@ function useTransactionsLogic() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user } = useAuth(); // Add this line
 
   useEffect(() => {
     async function fetchTransactions() {
+      if (!user?.userId) return; // Add this check
       try {
-        const response = await axios.get(`/api/complex/transactions/${userId}`);
+        const response = await axios.get(`/api/complex/transactions/${user.userId}`);
         setTransactions(response.data);
       } catch (err) {
         setError(err);
@@ -26,7 +27,7 @@ function useTransactionsLogic() {
     }
 
     fetchTransactions();
-  }, []);
+  }, [user?.userId]); // Update dependency
 
   const sortedTransactions = sortTransactionsByDateDescending(transactions);
   const transactionsGrouped = groupTransactionsByMonthFromCurrent(sortedTransactions);
@@ -40,10 +41,10 @@ function useTransactionsLogic() {
     try {
       if (updatedTxn.transaction_id) {
         await axios.put(`/api/complex/transaction/${updatedTxn.transaction_id}`, updatedTxn);
-        const response = await axios.get(`/api/complex/transactions/${userId}`);
+        const response = await axios.get(`/api/complex/transactions/${user.userId}`);
         setTransactions(response.data);
       } else {
-        const response = await axios.post(`/api/complex/transaction`, { ...updatedTxn, user_id: userId });
+        const response = await axios.post(`/api/complex/transaction`, { ...updatedTxn, user_id: user.userId });
         const newTransaction = { ...updatedTxn, transaction_id: response.data.transaction_id };
         setTransactions(prev => [...prev, newTransaction]);
       }

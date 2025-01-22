@@ -8,7 +8,7 @@ function getPreviousBusinessDay() {
   
   // If the system date is in the future (beyond today's real date),
   // fall back to today's actual date to avoid requesting data that doesn't exist in Polygon.
-  /*const now = new Date();
+  const now = new Date();
   if (date > now) {
     console.warn('System date is ahead of the real date. Falling back to current date.');
     date = now;
@@ -26,10 +26,7 @@ function getPreviousBusinessDay() {
   }
 
   return date.toISOString().split('T')[0];
-  */
-  date.setDate(date.getDate() - 4);
-
-  return date.toISOString().split('T')[0];
+  
 }
 
 export async function fetchStockPrices(tickers) {

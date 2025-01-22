@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './TransactionInput.css';
+import { useAuth } from '../context/AuthContext';
 
 function TransactionInput({ onClose, onSave, initialTransaction }) {
+  const { user } = useAuth();
   const [transactionType, setTransactionType] = useState(
     initialTransaction?.transaction_type || 'Income'
   );
@@ -41,12 +43,18 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
   useEffect(() => {
     // Fetch user accounts
     async function fetchAccounts() {
-      const userId = 2; // or dynamic
-      const res = await axios.get(`/api/accounts/${userId}`);
-      setAccounts(res.data);
+      try {
+        const res = await axios.get(`/api/accounts/${user?.userId}`);
+        setAccounts(res.data);
+      } catch (err) {
+        console.error('Error fetching accounts:', err);
+      }
     }
-    fetchAccounts();
-  }, []);
+
+    if (user?.userId) {
+      fetchAccounts();
+    }
+  }, [user?.userId]);
 
   useEffect(() => {
     // Fetch categories by transaction type
@@ -73,9 +81,8 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
     // Fetch currency of from_account
     async function fetchCurrency() {
       try {
-        if (formData.from_account) {
-          const userId = 2; // or dynamic
-          const res = await axios.get(`/api/accounts/${userId}/currencySymbol/${formData.from_account}`);
+        if (formData.from_account && user?.userId) {
+          const res = await axios.get(`/api/accounts/${user.userId}/currencySymbol/${formData.from_account}`);
           setCurrencySymbol(res.data.currency_symbol || '');
           setFormData(prev => ({ ...prev, currency: res.data.currency_symbol || '' }));
         }
@@ -84,7 +91,7 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
       }
     }
     fetchCurrency();
-  }, [formData.from_account]);
+  }, [formData.from_account, user?.userId]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({

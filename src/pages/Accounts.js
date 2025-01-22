@@ -6,10 +6,11 @@ import Modal from '../components/Modal';
 import axios from 'axios';
 import config from '../Config';
 import './Accounts.css';
+import { useAuth } from '../context/AuthContext';
 
 function Accounts() {
-  const userId = 3; // Replace with the actual user ID
-  const { groupedAccounts, assets, liabilities, total, loading, error } = useAccounts(userId);
+  const { user } = useAuth(); // Add this line
+  const { groupedAccounts, assets, liabilities, total, loading, error } = useAccounts(user?.userId);
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editAcc, setEditAcc] = useState(null);
@@ -21,7 +22,7 @@ function Accounts() {
   useEffect(() => {
     async function fetchCurrencies() {
       try {
-        const response = await axios.get(`${config.apiBaseUrl}/api/users/${userId}/currencies`);
+        const response = await axios.get(`${config.apiBaseUrl}/api/users/${user?.userId}/currencies`);
         const data = response.data;
         if (data.primary_currency && data.secondary_currency) {
           setCurrencies([
@@ -47,13 +48,18 @@ function Accounts() {
       }
     }
 
-    fetchCurrencies();
-    fetchAccountTypes();
-  }, [userId]);
+    if (user?.userId) {
+      fetchCurrencies();
+      fetchAccountTypes();
+    }
+  }, [user?.userId]);
 
   async function handleAdd(newAcc) {
     try {
-      await createAccount(newAcc);
+      await createAccount({
+        ...newAcc,
+        user_id: user?.userId
+      });
       window.location.reload();
     } catch (error) {
       console.error('Error creating account:', error.message);
@@ -119,7 +125,7 @@ function Accounts() {
                 name: addForm.name,
                 total_amount: 0,
                 account_type_id: parseInt(addForm.account_type_id),
-                user_id: userId,
+                user_id: user?.userId,
                 currency_choice: addForm.currency_choice,
               });
             }}

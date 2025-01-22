@@ -12,9 +12,11 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
+    // Also get stored user data
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    if (token && storedUser) {
       setIsAuthenticated(true);
-      // You could verify the token here
+      setUser(storedUser);
     }
     setLoading(false);
   }, []);
@@ -23,8 +25,10 @@ export function AuthProvider({ children }) {
     try {
       const response = await axios.post('/api/login', { email, password });
       const { token, userId, userName } = response.data;
+      const userData = { userId, userName };
       localStorage.setItem('token', token);
-      setUser({ userId, userName });
+      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
       setIsAuthenticated(true);
       return true;
     } catch (error) {
@@ -35,6 +39,7 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setUser(null);
     setIsAuthenticated(false);
   };
