@@ -840,11 +840,6 @@ app.post('/api/complex/transaction', async (req, res) => {
       transaction_category_id = transactionCategoryRow.transaction_category_id;
     } else {
       // If the category doesn't exist, create a new one
-      const [newCategoryResult] = await conn.query(
-        'INSERT INTO transaction_category (transaction_category_de, user_id, transaction_type_id) VALUES (?, ?, ?)',
-        [transaction_category, user_id, transaction_type_id]
-      );
-      transaction_category_id = newCategoryResult.insertId;
     }
 
     // 2) Find the foreign keys for from_account and to_account based on account name
