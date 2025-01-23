@@ -12,6 +12,11 @@ function Transactions() {
   const { transactions, transactionsGrouped, availableMonths, handleSave, handleDelete } =
     useTransactions();
 
+  // Get current system month/year for empty state
+  const getCurrentMonthYear = () => {
+    const now = new Date();
+    return now.toLocaleString('default', { month: 'long', year: 'numeric' });
+  };
 
   //-------------------------------------logic for the monthly switcher---------------
 
@@ -47,7 +52,11 @@ function Transactions() {
 
 
   //we want to get the monthyear label with the index
+  // Update getMonthYearLabel to handle empty state
   const getMonthYearLabel = (index) => {
+    if (transactionsGrouped.length === 0) {
+      return getCurrentMonthYear();
+    }
     const group = transactionsGrouped[index];
     if (!group) return '';
     const { year, month } = group;
@@ -111,22 +120,28 @@ function Transactions() {
 
       
       <div>
-        {currentMonthTransactions.map((txn) => (
-        <TransactionBox key={txn.transaction_id}>
-          <Transaction
-            date={txn.transaction_date}
-            amount={txn.transaction_amount}
-            accountFrom={txn.from_account}
-            accountTo={txn.to_account}
-            transactionName={txn.transaction_name}
-            category={txn.transaction_category}
-            type={txn.transaction_type}
-            currency={txn.currency_symbol}
-            onEdit={() => handleEdit(txn)}
-            onDelete={() => handleDelete(txn.transaction_id)}
-          />
-        </TransactionBox>
-      ))}
+        {currentMonthTransactions.length === 0 ? (
+          <div className="no-transactions-message">
+            No transactions added yet
+          </div>
+        ) : (
+          currentMonthTransactions.map((txn) => (
+            <TransactionBox key={txn.transaction_id}>
+              <Transaction
+                date={txn.transaction_date}
+                amount={txn.transaction_amount}
+                accountFrom={txn.from_account}
+                accountTo={txn.to_account}
+                transactionName={txn.transaction_name}
+                category={txn.transaction_category}
+                type={txn.transaction_type}
+                currency={txn.currency_symbol}
+                onEdit={() => handleEdit(txn)}
+                onDelete={() => handleDelete(txn.transaction_id)}
+              />
+            </TransactionBox>
+          ))
+        )}
       </div>
     </>
   );
