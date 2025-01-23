@@ -1,10 +1,11 @@
 DELIMITER //
 
--- Helper function to get latest conversion rate between two currencies
+-- Modified get_conversion_rate function to consider transaction date
 CREATE FUNCTION get_conversion_rate(
     p_user_id INT,
     p_from_currency INT,
-    p_to_currency INT
+    p_to_currency INT,
+    p_transaction_date DATE
 ) RETURNS DECIMAL(15,6)
 DETERMINISTIC
 BEGIN
@@ -15,10 +16,11 @@ BEGIN
         RETURN 1;
     END IF;
     
-    -- Get latest rate for this user
+    -- Get the rate closest to but not after the transaction date
     SELECT conversion_rate INTO v_rate
     FROM currency_rate 
     WHERE user_id = p_user_id
+    AND start_date <= p_transaction_date
     ORDER BY start_date DESC
     LIMIT 1;
     
@@ -57,8 +59,13 @@ BEGIN
             SELECT currency_id INTO to_currency
             FROM account WHERE account_id = NEW.to_account_id;
             
-            -- Get conversion rate
-            SET conv_rate = get_conversion_rate(NEW.user_id, from_currency, to_currency);
+            -- Pass transaction_date to get_conversion_rate
+            SET conv_rate = get_conversion_rate(
+                NEW.user_id, 
+                from_currency, 
+                to_currency, 
+                NEW.transaction_date
+            );
             
             -- Update source account
             UPDATE account 
