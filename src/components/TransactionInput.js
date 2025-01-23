@@ -94,9 +94,23 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
   }, [formData.from_account, user?.userId]);
 
   const handleChange = (e) => {
-    setFormData((prev) => ({
+    const { name, value } = e.target;
+    
+    // Special handling for amount field
+    if (name === 'transaction_amount') {
+      // Convert to number and ensure it's positive
+      const numValue = Math.abs(parseFloat(value));
+      setFormData(prev => ({
+        ...prev,
+        [name]: numValue || '' // Use empty string if NaN
+      }));
+      return;
+    }
+  
+    // Normal handling for other fields
+    setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value
     }));
   };
 
@@ -148,6 +162,7 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
             name="transaction_amount"
             type="number"
             step="0.01"
+            min="0" // Add this line
             value={formData.transaction_amount}
             onChange={handleChange}
             placeholder="Amount"
