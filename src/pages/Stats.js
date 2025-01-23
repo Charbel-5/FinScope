@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { useTransactions } from '../context/TransactionsContext';
 import { transformMonthTransactionsToDailyData } from '../Services/TransactionsData';
 import MonthlySwitcher from '../components/MonthlySwitcher';
+import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 import './Stats.css';
 
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#FF6B6B'];
 
 function transformAllTransactionsForStockChart(allTransactions) {
   let running = 0;
@@ -26,8 +29,36 @@ function transformAllTransactionsForStockChart(allTransactions) {
 function Stats() {
   const { transactionsGrouped, availableMonths, transactions } = useTransactions();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [primaryCurrencySymbol, setPrimaryCurrencySymbol] = useState('');
+  const [conversionRates, setConversionRates] = useState([]);
+  const { user } = useAuth();
   const stockData = transformAllTransactionsForStockChart(transactions);
 
+  // Fetch currency info and conversion rates
+  useEffect(() => {
+    async function fetchCurrencyInfo() {
+      if (!user?.userId) return;
+      const [userAttrs, ratesRes] = await Promise.all([
+        axios.get(`/api/complex/userAttributes/${user.userId}`),
+        axios.get(`/api/currency_rates/${user.userId}`)
+      ]);
+      setPrimaryCurrencySymbol(userAttrs.data.primary_currency_symbol);
+      setConversionRates(ratesRes.data);
+    }
+    fetchCurrencyInfo();
+  }, [user?.userId]);
+
+  // Helper function to get conversion rate for a date
+  const getConversionRate = (transactionDate) => {
+    if (!conversionRates.length) return 1;
+    
+    // Find the rate effective on or before the transaction date
+    const applicableRate = conversionRates
+      .sort((a, b) => new Date(b.start_date) - new Date(a.start_date))
+      .find(rate => new Date(rate.start_date) <= new Date(transactionDate));
+    
+    return applicableRate ? applicableRate.conversion_rate : 1;
+  };
 
   // Navigation
   const handlePrevious = () => {
@@ -46,24 +77,80 @@ function Stats() {
   const currentGroup = transactionsGrouped[currentIndex] || {};
   const dailyData = transformMonthTransactionsToDailyData(currentGroup.transactions || []);
 
-  // Calculate totals from the transactions directly
+  // Calculate totals with historical conversion rates
   const monthlyTransactions = currentGroup.transactions || [];
+  
   const totalIncome = monthlyTransactions
     .filter(t => t.transaction_type === 'Income')
-    .reduce((sum, t) => sum + parseFloat(t.transaction_amount), 0);
+    .reduce((sum, t) => {
+      const amount = parseFloat(t.transaction_amount) || 0;
+      const rate = t.currency_symbol === primaryCurrencySymbol 
+        ? 1 
+        : getConversionRate(t.transaction_date);
+      const convertedAmount = amount * rate;
+      return sum + (isNaN(convertedAmount) ? 0 : convertedAmount);
+    }, 0);
 
   const totalExpense = monthlyTransactions
     .filter(t => t.transaction_type === 'Expense')
-    .reduce((sum, t) => sum + parseFloat(t.transaction_amount), 0);
+    .reduce((sum, t) => {
+      const amount = parseFloat(t.transaction_amount) || 0;
+      const rate = t.currency_symbol === primaryCurrencySymbol 
+        ? 1 
+        : getConversionRate(t.transaction_date);
+      const convertedAmount = amount * rate;
+      return sum + (isNaN(convertedAmount) ? 0 : convertedAmount);
+    }, 0);
 
   const netBalance = totalIncome - totalExpense;
 
-  // Prepare pie chart data
-  const pieData = [
-    { name: 'Total Income', value: totalIncome },
-    { name: 'Total Expense', value: totalExpense },
-  ];
-  const COLORS = ['#00C49F', '#FF8042'];
+  // Fix pie chart data preparation
+  const expenseCategoryData = monthlyTransactions
+    .filter(t => t.transaction_type === 'Expense' && t.transaction_category)
+    .reduce((acc, t) => {
+      const amount = parseFloat(t.transaction_amount) || 0;
+      const rate = t.currency_symbol === primaryCurrencySymbol 
+        ? 1 
+        : getConversionRate(t.transaction_date);
+      const convertedAmount = amount * rate;
+      
+      const category = t.transaction_category;
+      acc[category] = (acc[category] || 0) + convertedAmount;
+      return acc;
+    }, {});
+
+  const incomeCategoryData = monthlyTransactions
+    .filter(t => t.transaction_type === 'Income' && t.transaction_category)
+    .reduce((acc, t) => {
+      const amount = parseFloat(t.transaction_amount) || 0;
+      const rate = t.currency_symbol === primaryCurrencySymbol 
+        ? 1 
+        : getConversionRate(t.transaction_date);
+      const convertedAmount = amount * rate;
+      
+      const category = t.transaction_category;
+      acc[category] = (acc[category] || 0) + convertedAmount;
+      return acc;
+    }, {});
+
+  const expensePieData = Object.entries(expenseCategoryData)
+    .map(([name, value]) => ({
+      name,
+      value: parseFloat(value.toFixed(2))
+    }))
+    .filter(item => !isNaN(item.value) && item.value > 0);
+
+  const incomePieData = Object.entries(incomeCategoryData)
+    .map(([name, value]) => ({
+      name,
+      value: parseFloat(value.toFixed(2))
+    }))
+    .filter(item => !isNaN(item.value) && item.value > 0);
+
+  // Add debug logging
+  console.log('Monthly transactions:', monthlyTransactions);
+  console.log('Category data:', expenseCategoryData);
+  console.log('Pie data:', expensePieData);
 
   return (
     <div>
@@ -79,9 +166,15 @@ function Stats() {
 
     <div className='spacer'>
       <div className='statistics'>
-        <div className='stats-income'>Monthly Income: {totalIncome}</div>
-        <div className='stats-expense'>Monthly Expense: {totalExpense}</div>
-        <div className={`${ netBalance > 0 ? 'stats-income' : 'stats-expense'}`}>Net Balance: {netBalance}</div>
+        <div className='stats-income'>
+          Monthly Income: {totalIncome.toFixed(2)} {primaryCurrencySymbol}
+        </div>
+        <div className='stats-expense'>
+          Monthly Expense: {totalExpense.toFixed(2)} {primaryCurrencySymbol}
+        </div>
+        <div className={`${netBalance >= 0 ? 'stats-income' : 'stats-expense'}`}>
+          Net Balance: {netBalance.toFixed(2)} {primaryCurrencySymbol}
+        </div>
       </div>
       
     </div>
@@ -95,15 +188,55 @@ function Stats() {
 
 
     <div>
-      <h3>Totals (Pie Chart)</h3>
-      <PieChart width={400} height={300}>
-        <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-          {pieData.map((entry, index) => (
-            <Cell key={index} fill={COLORS[index]} />
-          ))}
-        </Pie>
-        <Tooltip />
-      </PieChart>
+      <h3>Expense Categories</h3>
+      {expensePieData.length > 0 ? (
+        <PieChart width={400} height={400}>
+          <Pie
+            data={expensePieData}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            outerRadius={150}
+            fill="#8884d8"
+            label
+          >
+            {expensePieData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      ) : (
+        <div>No expense data available</div>
+      )}
+    </div>
+
+    <div>
+      <h3>Income Categories</h3>
+      {incomePieData.length > 0 ? (
+        <PieChart width={400} height={400}>
+          <Pie
+            data={incomePieData}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            outerRadius={150}
+            fill="#82ca9d"
+            label
+          >
+            {incomePieData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      ) : (
+        <div>No income data available</div>
+      )}
     </div>
 
     </div>
