@@ -37,16 +37,50 @@ function getLiabilities(accounts) {
     .reduce((sum, acc) => sum + Number(acc.total_amount), 0);
 }
 
+function getAssetsInPrimaryCurrency(accounts, conversionRate) {
+  return accounts
+    .filter((acc) => Number(acc.total_amount) >= 0)
+    .reduce((sum, acc) => {
+      // If account is in secondary currency, convert to primary
+      const amount = Number(acc.total_amount);
+      return sum + (acc.currency_symbol === acc.primary_currency_symbol 
+        ? amount 
+        : amount * conversionRate);
+    }, 0);
+}
+
+function getLiabilitiesInPrimaryCurrency(accounts, conversionRate) {
+  return accounts
+    .filter((acc) => Number(acc.total_amount) < 0)
+    .reduce((sum, acc) => {
+      // If account is in secondary currency, convert to primary
+      const amount = Number(acc.total_amount);
+      return sum + (acc.currency_symbol === acc.primary_currency_symbol 
+        ? amount 
+        : amount * conversionRate);
+    }, 0);
+}
+
 export function useAccounts(userId) {
   const [accounts, setAccounts] = useState([]);
+  const [primaryCurrencySymbol, setPrimaryCurrencySymbol] = useState(null);
+  const [conversionRate, setConversionRate] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function fetchAccounts() {
+    async function fetchData() {
       try {
-        const response = await axios.get(`${config.apiBaseUrl}/api/accounts/${userId}`);
-        setAccounts(response.data);
+        // Fetch accounts
+        const accountsRes = await axios.get(`${config.apiBaseUrl}/api/accounts/${userId}`);
+        setAccounts(accountsRes.data);
+
+        // Fetch user's currency info and latest rate
+        const userAttrsRes = await axios.get(`${config.apiBaseUrl}/api/complex/userAttributes/${userId}`);
+        const userAttrs = userAttrsRes.data;
+        setPrimaryCurrencySymbol(userAttrs.primary_currency_symbol);
+        setConversionRate(userAttrs.latest_rate || 1);
+        
         setLoading(false);
       } catch (err) {
         setError(err);
@@ -54,13 +88,21 @@ export function useAccounts(userId) {
       }
     }
 
-    fetchAccounts();
+    fetchData();
   }, [userId]);
 
   const groupedAccounts = groupAccountsByType(accounts);
-  const assets = getAssets(accounts);
-  const liabilities = getLiabilities(accounts); // This will be negative
+  const assets = getAssetsInPrimaryCurrency(accounts, conversionRate);
+  const liabilities = getLiabilitiesInPrimaryCurrency(accounts, conversionRate);
   const total = assets + liabilities;
 
-  return { groupedAccounts, assets, liabilities, total, loading, error };
+  return { 
+    groupedAccounts, 
+    assets, 
+    liabilities, 
+    total, 
+    loading, 
+    error, 
+    primaryCurrencySymbol 
+  };
 }

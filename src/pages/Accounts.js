@@ -9,8 +9,8 @@ import './Accounts.css';
 import { useAuth } from '../context/AuthContext';
 
 function Accounts() {
-  const { user } = useAuth(); // Add this line
-  const { groupedAccounts, assets, liabilities, total, loading, error } = useAccounts(user?.userId);
+  const { user } = useAuth();
+  const { groupedAccounts, assets, liabilities, total, loading, error, primaryCurrencySymbol } = useAccounts(user?.userId);
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editAcc, setEditAcc] = useState(null);
@@ -88,9 +88,9 @@ function Accounts() {
     <>
       <div className="accounts-container">
         <div className="accounts-header">
-          <h2 className='assets'>Assets: {assets}</h2>
-          <h2 className='liabilities'>Liabilities: {liabilities}</h2>
-          <h2 className={`${total > 0 ? 'assets' : 'liabilities'}`}>Total: {total}</h2>
+          <h2 className='assets'>Assets: {assets.toFixed(2)} {primaryCurrencySymbol}</h2>
+          <h2 className='liabilities'>Liabilities: {liabilities.toFixed(2)} {primaryCurrencySymbol}</h2>
+          <h2 className={`${total > 0 ? 'assets' : 'liabilities'}`}>Total: {total.toFixed(2)} {primaryCurrencySymbol}</h2>
         </div>
         {groupedAccounts.map(([type, accounts]) => (
           <div key={type} className="account-wrapper">

@@ -140,10 +140,13 @@ app.get('/api/accounts/:userId', async (req, res) => {
       SELECT 
         a.*, 
         at.account_type_description,
-        c.symbol AS currency_symbol
+        c.symbol AS currency_symbol,
+        c_primary.symbol AS primary_currency_symbol
       FROM account a
       JOIN account_type at ON a.account_type_id = at.account_type_id
       JOIN currency c ON a.currency_id = c.currency_id
+      JOIN users u ON a.user_id = u.user_id
+      JOIN currency c_primary ON u.primary_currency_id = c_primary.currency_id
       WHERE a.user_id = ?
     `;
     const [rows] = await pool.query(query, [userId]);
@@ -956,11 +959,11 @@ app.get('/api/accounts/:userId/currencySymbol/:accountName', async (req, res) =>
 app.get('/api/complex/userAttributes/:userId', async (req, res) => {
   const { userId } = req.params;
   try {
-    // Basic user info
     const userSql = `
       SELECT
         u.user_id,
         c1.currency_name AS primary_currency,
+        c1.symbol AS primary_currency_symbol,
         c2.currency_name AS secondary_currency
       FROM users u
         LEFT JOIN currency c1 ON u.primary_currency_id = c1.currency_id
@@ -982,8 +985,8 @@ app.get('/api/complex/userAttributes/:userId', async (req, res) => {
     const [[rateRow]] = await pool.query(rateSql, [userId]);
 
     res.json({
-      user_id: userRow.user_id, // or remove if you want no ID at all
       primary_currency: userRow.primary_currency,
+      primary_currency_symbol: userRow.primary_currency_symbol,
       secondary_currency: userRow.secondary_currency,
       latest_rate: rateRow ? rateRow.conversion_rate : null,
       latest_rate_date: rateRow ? rateRow.start_date : null

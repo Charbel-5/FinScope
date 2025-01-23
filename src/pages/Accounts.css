@@ -25,10 +25,12 @@
 
   .assets{
     color: #61ef61;
+    font-size: 22px;
   }
 
   .liabilities{
     color: #f06969;
+    font-size: 22px;
   }
 
   .add-account-button {
