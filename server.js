@@ -964,7 +964,8 @@ app.get('/api/complex/userAttributes/:userId', async (req, res) => {
         u.user_id,
         c1.currency_name AS primary_currency,
         c1.symbol AS primary_currency_symbol,
-        c2.currency_name AS secondary_currency
+        c2.currency_name AS secondary_currency,
+        c2.symbol AS secondary_currency_symbol
       FROM users u
         LEFT JOIN currency c1 ON u.primary_currency_id = c1.currency_id
         LEFT JOIN currency c2 ON u.secondary_currency_id = c2.currency_id

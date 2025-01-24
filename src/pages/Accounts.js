@@ -23,18 +23,30 @@ function Accounts() {
   useEffect(() => {
     async function fetchCurrencies() {
       try {
-        const response = await axios.get(`${config.apiBaseUrl}/api/users/${user?.userId}/currencies`);
-        const data = response.data;
-        if (data.primary_currency && data.secondary_currency) {
-          setCurrencies([
-            { currency_id: 1, currency_name: data.primary_currency },
-            { currency_id: 2, currency_name: data.secondary_currency }
-          ]);
-          setAddForm((prev) => ({
-            ...prev,
-            currency_id: 1 // Default to primary currency
-          }));
+        const userAttrsRes = await axios.get(`${config.apiBaseUrl}/api/complex/userAttributes/${user?.userId}`);
+        const data = userAttrsRes.data;
+        
+        console.log('User attributes data:', data);
+
+        const currencies = [
+          {
+            name: 'primary',
+            displayName: `Primary (${data.primary_currency_symbol})`,
+            symbol: data.primary_currency_symbol
+          }
+        ];
+
+        // Add secondary currency if it exists
+        if (data.secondary_currency) {
+          currencies.push({
+            name: 'secondary',
+            displayName: `Secondary (${data.secondary_currency})`, // Use currency name if symbol not available
+            symbol: data.secondary_currency
+          });
         }
+
+        console.log('Processed currencies:', currencies);
+        setCurrencies(currencies);
       } catch (err) {
         console.error('Error fetching currencies:', err);
       }
@@ -159,8 +171,11 @@ function Accounts() {
               value={addForm.currency_choice}
               onChange={(e) => setAddForm({ ...addForm, currency_choice: e.target.value })}
             >
-              <option value="primary">Primary Currency</option>
-              <option value="secondary">Secondary Currency</option>
+              {currencies.map(currency => (
+                <option key={currency.name} value={currency.name}>
+                  {currency.displayName}
+                </option>
+              ))}
             </select>
             <select
               value={addForm.account_type_id}
