@@ -1091,25 +1091,25 @@ const SECRET_KEY = process.env.JWT_SECRET || 'CHANGE_THIS_SECRET';
 
 // New endpoint: Register
 app.post('/api/register', async (req, res) => {
-  const { 
-    email, 
-    password, 
-    user_name, 
-    primary_currency_name,
-    secondary_currency_name,
-    conversion_rate 
-  } = req.body;
-
-  // Validate conversion rate
-  if (!conversion_rate || isNaN(conversion_rate)) {
-    return res.status(400).json({ error: 'Invalid conversion rate' });
-  }
-
+  const { email, password, user_name, primary_currency_name, secondary_currency_name, conversion_rate } = req.body;
   const conn = await pool.getConnection();
-  
+
   try {
     await conn.beginTransaction();
 
+    // Check if email already exists
+    const [existingUser] = await conn.query(
+      'SELECT user_id FROM users WHERE email = ?',
+      [email]
+    );
+
+    if (existingUser.length > 0) {
+      return res.status(409).json({
+        error: 'A user with this email already exists'
+      });
+    }
+
+    // Rest of the existing registration logic
     // 1. Get currency IDs
     const [[primaryCurrency]] = await conn.query(
       'SELECT currency_id FROM currency WHERE currency_name = ?',

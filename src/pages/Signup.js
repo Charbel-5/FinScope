@@ -118,7 +118,14 @@ function Signup() {
       }
     } catch (err) {
       console.error('Signup error:', err);
-      alert(err.response?.data?.error || 'Signup failed. Please try again.');
+      const errorMessage = err.response?.status === 409 
+        ? 'This email is already registered. Please use a different email or login.'
+        : err.response?.data?.error || 'Signup failed. Please try again.';
+      
+      setErrors(prev => ({
+        ...prev,
+        email: errorMessage
+      }));
     }
   };
 

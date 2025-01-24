@@ -18,6 +18,7 @@ function Accounts() {
   const [editForm, setEditForm] = useState({ name: '' });
   const [currencies, setCurrencies] = useState([]);
   const [accountTypes, setAccountTypes] = useState([]);
+  const [addFormError, setAddFormError] = useState('');
 
   useEffect(() => {
     async function fetchCurrencies() {
@@ -55,14 +56,24 @@ function Accounts() {
   }, [user?.userId]);
 
   async function handleAdd(newAcc) {
+    // Validate account name
+    const accountName = newAcc.name.trim();
+    if (!accountName) {
+      setAddFormError('Account name cannot be empty or contain only spaces.');
+      return;
+    }
+
     try {
       await createAccount({
         ...newAcc,
+        name: accountName, // Use trimmed name
         user_id: user?.userId
       });
+      setAddFormError(''); // Clear error on success
       window.location.reload();
     } catch (error) {
       console.error('Error creating account:', error.message);
+      setAddFormError('Error creating account. Please try again.');
     }
   }
 
@@ -119,7 +130,10 @@ function Accounts() {
       </button>
 
       {showForm && (
-        <Modal onClose={() => setShowForm(false)}>
+        <Modal onClose={() => {
+          setShowForm(false);
+          setAddFormError(''); // Clear error when closing modal
+        }}>
           <h2>Add Account</h2>
           <form
             onSubmit={(e) => {
@@ -138,7 +152,9 @@ function Accounts() {
               placeholder="Account Name"
               value={addForm.name}
               onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
+              required
             />
+            
             <select
               value={addForm.currency_choice}
               onChange={(e) => setAddForm({ ...addForm, currency_choice: e.target.value })}
@@ -156,6 +172,7 @@ function Accounts() {
                 </option>
               ))}
             </select>
+            {addFormError && <div className="error">{addFormError}</div>}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
               <button type="submit">Save</button>
               <button type="button" onClick={() => setShowForm(false)}>Cancel</button>
