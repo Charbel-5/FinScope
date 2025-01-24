@@ -11,11 +11,12 @@ function useTransactionsLogic() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { user } = useAuth(); // Add this line
+  const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
     async function fetchTransactions() {
-      if (!user?.userId) return; // Add this check
+      if (!user?.userId || !isAuthenticated) return;
+      
       try {
         const response = await axios.get(`/api/complex/transactions/${user.userId}`);
         setTransactions(response.data);
@@ -27,7 +28,7 @@ function useTransactionsLogic() {
     }
 
     fetchTransactions();
-  }, [user?.userId]); // Update dependency
+  }, [user?.userId, isAuthenticated]); // Add isAuthenticated to dependencies
 
   const sortedTransactions = sortTransactionsByDateDescending(transactions);
   const transactionsGrouped = groupTransactionsByMonthFromCurrent(sortedTransactions);

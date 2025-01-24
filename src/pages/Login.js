@@ -16,7 +16,7 @@ function Login() {
     try {
       const success = await login(email, password);
       if (success) {
-        navigate('/transactions');
+        window.location.href = '/transactions'; // Force a full page reload
       } else {
         setError('Invalid credentials');
       }

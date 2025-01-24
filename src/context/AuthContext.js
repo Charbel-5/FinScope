@@ -30,7 +30,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
       setIsAuthenticated(true);
-      return true;
+      return true; // Login success flag
     } catch (error) {
       console.error('Login failed:', error);
       return false;
