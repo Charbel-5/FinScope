@@ -102,7 +102,10 @@ function Accounts() {
                   balance={acc.total_amount}
                   currencySymbol={acc.currency_symbol}
                   onAccountClick={() => setSelectedAccount(acc.name)}
-                  onEdit={() => setEditAcc(acc)}
+                  onEdit={() => {
+                    setEditAcc(acc);
+                    setEditForm({ name: acc.name }); // Initialize editForm with current name
+                  }}
                   onDelete={() => handleDelete(acc.account_id)}
                 />
               </div>
@@ -153,8 +156,10 @@ function Accounts() {
                 </option>
               ))}
             </select>
-            <button type="submit">Save</button>
-            <button type="button" onClick={() => setShowForm(false)}>Cancel</button>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+              <button type="submit">Save</button>
+              <button type="button" onClick={() => setShowForm(false)}>Cancel</button>
+            </div>
           </form>
         </Modal>
       )}
@@ -174,8 +179,10 @@ function Accounts() {
               value={editForm.name}
               onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
             />
-            <button type="submit">Save</button>
-            <button type="button" onClick={() => setEditAcc(null)}>Cancel</button>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+              <button type="submit">Save</button>
+              <button type="button" onClick={() => setEditAcc(null)}>Cancel</button>
+            </div>
           </form>
         </Modal>
       )}
