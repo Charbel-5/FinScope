@@ -20,10 +20,6 @@ function LandingPage() {
         <div className="navbar__container">
           <div className="navbar__left">
             <div className="navbar__brand">FinScope</div>
-            <div className="navbar__search">
-              <input type="text" placeholder="Search..." />
-              <span className="navbar__search__icon">&#128269;</span>
-            </div>
           </div>
           <div className="navbar__actions">
             <button className="navbar__link" onClick={() => setShowLogin(true)}>Login</button>

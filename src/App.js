@@ -33,8 +33,12 @@ function AppContent() {
   return (
     <Router>
       {/* Show navbar only if desired, or conditionally if token */}
-      {isAuthenticated && <MainNavbar />}
-      <div className="NavbarSpacer"></div>
+      {isAuthenticated && (
+        <>
+          <MainNavbar />
+          <div className="NavbarSpacer"></div>
+        </>
+      )}
       <Routes>
         <Route path="/" element={
           <PublicRoute>

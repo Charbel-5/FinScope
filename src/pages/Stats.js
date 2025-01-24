@@ -147,107 +147,108 @@ function Stats() {
     }))
     .filter(item => !isNaN(item.value) && item.value > 0);
 
+  const totalPieData = [
+    { name: 'Total Income', value: totalIncome },
+    { name: 'Total Expense', value: totalExpense }
+  ].filter(item => !isNaN(item.value) && item.value > 0);
+
   // Add debug logging
   console.log('Monthly transactions:', monthlyTransactions);
   console.log('Category data:', expenseCategoryData);
   console.log('Pie data:', expensePieData);
 
   return (
-    <div>
-      <MonthlySwitcher
-        displayMonthYear={
-          availableMonths[currentIndex] || ''
-        }
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        availableMonths={availableMonths}
-        onSelectMonth={handleSelectMonth}
-      />
+    <div className="stats-container">
+      <div className="monthly-overview">
+        <MonthlySwitcher
+          displayMonthYear={availableMonths[currentIndex] || ''}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          availableMonths={availableMonths}
+          onSelectMonth={handleSelectMonth}
+        />
 
-    <div className='spacer'>
-      <div className='statistics'>
-        <div className='stats-income'>
-          Monthly Income: {totalIncome.toFixed(2)} {primaryCurrencySymbol}
-        </div>
-        <div className='stats-expense'>
-          Monthly Expense: {totalExpense.toFixed(2)} {primaryCurrencySymbol}
-        </div>
-        <div className={`${netBalance >= 0 ? 'stats-income' : 'stats-expense'}`}>
-          Net Balance: {netBalance.toFixed(2)} {primaryCurrencySymbol}
+        <div className="statistics">
+          <div className="stat-card stats-income">
+            <h4>Monthly Income</h4>
+            <div>{totalIncome.toFixed(2)} {primaryCurrencySymbol}</div>
+          </div>
+          <div className="stat-card stats-expense">
+            <h4>Monthly Expense</h4>
+            <div>{totalExpense.toFixed(2)} {primaryCurrencySymbol}</div>
+          </div>
+          <div className={`stat-card ${netBalance >= 0 ? 'stats-income' : 'stats-expense'}`}>
+            <h4>Net Balance</h4>
+            <div>{netBalance.toFixed(2)} {primaryCurrencySymbol}</div>
+          </div>
         </div>
       </div>
-      
-    </div>
-    
-    
-    <div className='stats-page spacer'>
 
+      <div className="charts-grid">
+        <div className="pie-charts-column">
+          <div className="chart-container pie-chart-container">
+            <h3>Expense Categories</h3>
+            {expensePieData.length > 0 ? (
+              <div className="responsive-chart">
+                <PieChart width={300} height={300}>
+                  <Pie
+                    data={expensePieData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    fill="#8884d8"
+                    label
+                  >
+                    {expensePieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </div>
+            ) : (
+              <div>No expense data available</div>
+            )}
+          </div>
 
-    <div>
+          <div className="chart-container pie-chart-container">
+            <h3>Income Categories</h3>
+            {incomePieData.length > 0 ? (
+              <div className="responsive-chart">
+                <PieChart width={300} height={300}>
+                  <Pie
+                    data={incomePieData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    fill="#82ca9d"
+                    label
+                  >
+                    {incomePieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </div>
+            ) : (
+              <div>No income data available</div>
+            )}
+          </div>
+        </div>
 
-
-
-    <div>
-      <h3>Expense Categories</h3>
-      {expensePieData.length > 0 ? (
-        <PieChart width={400} height={400}>
-          <Pie
-            data={expensePieData}
-            dataKey="value"
-            nameKey="name"
-            cx="50%"
-            cy="50%"
-            outerRadius={150}
-            fill="#8884d8"
-            label
-          >
-            {expensePieData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip />
-          <Legend />
-        </PieChart>
-      ) : (
-        <div>No expense data available</div>
-      )}
-    </div>
-
-    <div>
-      <h3>Income Categories</h3>
-      {incomePieData.length > 0 ? (
-        <PieChart width={400} height={400}>
-          <Pie
-            data={incomePieData}
-            dataKey="value"
-            nameKey="name"
-            cx="50%"
-            cy="50%"
-            outerRadius={150}
-            fill="#82ca9d"
-            label
-          >
-            {incomePieData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip />
-          <Legend />
-        </PieChart>
-      ) : (
-        <div>No income data available</div>
-      )}
-    </div>
-
-    </div>
-        
-          
-
-          <div>
-            <h3>Daily Income/Expense (Bar Chart)</h3>
-            <BarChart width={600} height={300} data={dailyData} margin={{ top: 30 }}>
+        <div className="chart-container">
+          <h3>Daily Income/Expense</h3>
+          <div className="responsive-chart">
+            <BarChart width={500} height={300} data={dailyData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" label={{ value: 'Day', position: 'insideBottom' }} />
+              <XAxis dataKey="date" />
               <YAxis />
               <Tooltip />
               <Legend />
@@ -255,26 +256,49 @@ function Stats() {
               <Bar dataKey="expense" fill="#8884d8" />
             </BarChart>
           </div>
+        </div>
 
-      
-     
+        <div className="chart-container">
+          <h3>Balance Trend</h3>
+          <div className="responsive-chart">
+            <LineChart width={500} height={300} data={stockData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="close" stroke="#82ca9d" />
+            </LineChart>
+          </div>
+        </div>
 
-      <div className='spacer line-chart'>
-        <h3>Line Chart</h3>
-        <LineChart width={600} height={300} data={stockData} margin={{ top: 30, right: 30, left: 0, bottom: 10 }}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey="close" stroke="#82ca9d" />
-        </LineChart>
+        <div className="pie-chart-container">
+          <h3>Monthly Total Distribution</h3>
+          {totalPieData.length > 0 ? (
+            <div className="responsive-chart">
+              <PieChart width={400} height={300}>
+                <Pie
+                  data={totalPieData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  label
+                >
+                  <Cell fill="#82ca9d" /> {/* Income color */}
+                  <Cell fill="#8884d8" /> {/* Expense color */}
+                </Pie>
+                <Tooltip formatter={(value) => `${value.toFixed(2)} ${primaryCurrencySymbol}`} />
+                <Legend />
+              </PieChart>
+            </div>
+          ) : (
+            <div>No data available</div>
+          )}
+        </div>
       </div>
     </div>
-      
-  </div>
-
-      
   );
 }
 
