@@ -12,8 +12,9 @@ function Transaction({
   onEdit, 
   onDelete
 }) {
+  // Add dynamic class based on transaction type
   return (
-    <div className="transaction">
+    <div className={`transaction ${type}`}>  {/* Add type as a class */}
       <div className="transaction-details">
         <div className="transaction-name">{transactionName}</div>
         <div className="transaction-meta">
@@ -34,7 +35,6 @@ function Transaction({
       <div className={`transaction-amount amount ${type}`}>
         {amount} {currency}
       </div>
-
       <div className="transaction-actions">
         <button onClick={onEdit}>Edit</button>
         <button onClick={onDelete}>Delete</button>

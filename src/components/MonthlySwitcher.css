@@ -1,33 +1,40 @@
 .monthly-switcher {
+  padding: 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 20px;
+  gap: var(--space-md);
 }
 
 .monthly-switcher button {
-  margin: 0 10px;
-  font-size: 16px;
-  padding: 8px 12px;
-  background-color: #0d6efd;
-  color: #fff;
+  background-color: var(--primary);
+  color: var(--neutral-100);
   border: none;
-  border-radius: 4px;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.month-day-showcaser{
-  width: 130px;
+.month-day-showcaser {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--neutral-600);
+  min-width: 200px;
   text-align: center;
 }
 
-  .monthly-switcher button:hover {
-    background-color: #0b5ed7;
-  }
-  
-  .transactions-container {
-    width: 60%;
-  }
+.monthly-switcher button:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-1px);
+}
 
+.transactions-container {
+  width: 60%;
+}
 
 .month-selector-backdrop {
   position: fixed;
@@ -39,20 +46,27 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 1000;
 }
 
 .month-selector-content {
-  background-color: #fff;
+  background: var(--neutral-100);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-md);
   max-height: 400px;
   width: 300px;
   overflow-y: auto;
-  border-radius: 8px;
-  padding: 16px;
 }
 
 .month-selector-item {
+  padding: var(--space-sm);
+  border-bottom: 1px solid var(--neutral-300);
   cursor: pointer;
-  padding: 8px;
-  border-bottom: 1px solid #ccc;
+  transition: all 0.2s ease;
+}
+
+.month-selector-item:hover {
+  background-color: var(--primary-light);
+  padding-left: var(--space-md);
 }
