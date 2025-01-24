@@ -148,7 +148,7 @@ CREATE TABLE `currency_rate` (
 
     `start_date`       DATE          NOT NULL,
  
-    `user_id`     INT NULL,
+    `user_id`     INT NOT NULL,
  
     PRIMARY KEY (`currency_rate_id`),
  

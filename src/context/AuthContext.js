@@ -44,9 +44,25 @@ export function AuthProvider({ children }) {
     setIsAuthenticated(false);
   };
 
-  const signup = async (email, password, userName) => {
+  const signup = async (email, password, userName, primaryCurrency, secondaryCurrency, conversionRate) => {
     try {
-      await axios.post('/api/register', { email, password, user_name: userName });
+      // Register user
+      const response = await axios.post('/api/register', {
+        email,
+        password,
+        user_name: userName,
+        primary_currency_name: primaryCurrency,
+        secondary_currency_name: secondaryCurrency
+      });
+
+      // After registration, automatically set the initial conversion rate
+      await axios.post('/api/currency_rates', {
+        conversion_rate: conversionRate,
+        start_date: new Date().toISOString().split('T')[0],
+        // Note: You'll need to handle getting the user_id after registration
+        user_id: response.data.userId 
+      });
+
       return true;
     } catch (error) {
       console.error('Signup failed:', error);

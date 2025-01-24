@@ -1091,18 +1091,89 @@ const SECRET_KEY = process.env.JWT_SECRET || 'CHANGE_THIS_SECRET';
 
 // New endpoint: Register
 app.post('/api/register', async (req, res) => {
-  const { email, password, user_name } = req.body;
+  const { 
+    email, 
+    password, 
+    user_name, 
+    primary_currency_name,
+    secondary_currency_name,
+    conversion_rate 
+  } = req.body;
+
+  // Validate conversion rate
+  if (!conversion_rate || isNaN(conversion_rate)) {
+    return res.status(400).json({ error: 'Invalid conversion rate' });
+  }
+
+  const conn = await pool.getConnection();
+  
   try {
-    const hashed = await bcrypt.hash(password, 10);
-    await pool.query(
-      `INSERT INTO users (email, password, user_name, primary_currency_id, secondary_currency_id)
-       VALUES (?, ?, ?, 1, 2)`,
-      [email, hashed, user_name]
+    await conn.beginTransaction();
+
+    // 1. Get currency IDs
+    const [[primaryCurrency]] = await conn.query(
+      'SELECT currency_id FROM currency WHERE currency_name = ?',
+      [primary_currency_name]
     );
-    res.sendStatus(201);
+    
+    const [[secondaryCurrency]] = await conn.query(
+      'SELECT currency_id FROM currency WHERE currency_name = ?',
+      [secondary_currency_name]
+    );
+
+    if (!primaryCurrency || !secondaryCurrency) {
+      throw new Error('Currency not found');
+    }
+
+    // 2. Create user
+    const hashed = await bcrypt.hash(password, 10);
+    await conn.query(
+      `INSERT INTO users (
+        email, 
+        password, 
+        user_name, 
+        primary_currency_id, 
+        secondary_currency_id
+      ) VALUES (?, ?, ?, ?, ?)`,
+      [email, hashed, user_name, primaryCurrency.currency_id, secondaryCurrency.currency_id]
+    );
+
+    // 3. Get created user's ID
+    const [[userRow]] = await conn.query(
+      'SELECT user_id FROM users WHERE email = ?',
+      [email]
+    );
+
+    if (!userRow) {
+      throw new Error('User creation failed');
+    }
+
+    // 4. Create initial currency rate
+    const currentDate = new Date().toISOString().slice(0, 10);
+    await conn.query(
+      `INSERT INTO currency_rate (
+        conversion_rate,
+        start_date,
+        user_id
+      ) VALUES (?, ?, ?)`,
+      [conversion_rate, currentDate, userRow.user_id]
+    );
+
+    await conn.commit();
+    res.status(201).json({
+      message: 'Registration successful',
+      userId: userRow.user_id
+    });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Error registering user');
+    await conn.rollback();
+    console.error('Registration error:', err);
+    res.status(500).json({
+      error: 'Registration failed',
+      details: err.message
+    });
+  } finally {
+    conn.release();
   }
 });
 
