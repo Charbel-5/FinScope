@@ -15,27 +15,31 @@ function LandingPage() {
 
   return (
     <>
-      {/* NAVBAR */}
       <nav className="navbar">
         <div className="navbar__container">
           <div className="navbar__left">
             <div className="navbar__brand">FinScope</div>
           </div>
+          {/* Regular buttons for desktop */}
           <div className="navbar__actions">
             <button className="btn--signup" onClick={() => setShowLogin(true)}>Login</button>
             <button className="btn--signup" onClick={() => setShowSignup(true)}>Sign Up</button>
           </div>
+          {/* Burger menu for mobile */}
           <div className="navbar__burger" onClick={toggleMobileMenu}>
             <div className="navbar__burger-line"></div>
             <div className="navbar__burger-line"></div>
             <div className="navbar__burger-line"></div>
           </div>
         </div>
+        {/* Mobile menu items */}
         <div className={`navbar__items ${isMobileMenuVisible ? 'visible' : ''}`}>
-          <button className="navbar__link" onClick={() => setShowLogin(true)}>Login</button>
+          <button className="btn--signup" onClick={() => setShowLogin(true)}>Login</button>
           <button className="btn--signup" onClick={() => setShowSignup(true)}>Sign Up</button>
         </div>
       </nav>
+      
+      {/* Rest of your landing page content */}
 
       {/* HERO SECTION */}
       <section className="hero">
@@ -132,7 +136,6 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* Auth Modals */}
       {showLogin && (
         <AuthModal onClose={() => setShowLogin(false)}>
           <Login onSuccess={() => setShowLogin(false)} />
