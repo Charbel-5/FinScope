@@ -74,12 +74,22 @@
   border-radius: var(--radius-sm);
   background-color: var(--primary);
   color: var(--neutral-100);
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  margin-top: 20px;
 }
 
 .transaction-actions button:hover {
   background-color: var(--primary-dark);
+}
+
+.transaction-actions button:last-child {
+  background-color: var(--error);
+}
+
+.transaction-actions button:last-child:hover {
+  background-color: #d05555;
 }
 
 .transaction:hover .transaction-actions {

@@ -1,20 +1,19 @@
-// ...existing code...
 import React, { useState } from 'react';
 import { useStocks } from '../context/StocksContext';
 import AddStockForm from '../components/AddStockForm';
 import StockList from '../components/StockList';
-import '../pages/Transactions.css';
+import './Stocks.css';
 
 function Stocks() {
-  const { mapHoldingsToPrices, getTotalValue, editStock, deleteStock } = useStocks();
+  const { mapHoldingsToPrices, getTotalValue, editStock, deleteStock, loading, error } = useStocks();
   const [showForm, setShowForm] = useState(false);
   const [editData, setEditData] = useState(null);
 
   const holdingsWithPrices = mapHoldingsToPrices();
   const totalValue = getTotalValue();
 
-  function handleEdit(h) {
-    setEditData(h);
+  function handleEdit(holding) {
+    setEditData(holding);
     setShowForm(true);
   }
 
@@ -23,13 +22,14 @@ function Stocks() {
   }
 
   return (
-    <div style={{ padding: '20px' }}>
-      
-      <h2 style={ {textAlign: 'center'} }>Holdings</h2>
+    <div className="stocks-container">
+      <div className="portfolio-overview">
+        <h2>Portfolio Overview</h2>
+        <div className="total-value">${totalValue.toFixed(2)}</div>
+      </div>
 
-      <div  style={ {textAlign: 'center'} }>Total Portfolio Value: {totalValue}</div>
       <button
-        className="add-transaction-button"
+        className="add-stock-button"
         onClick={() => setShowForm(true)}
       >
         +
@@ -51,6 +51,8 @@ function Stocks() {
         data={holdingsWithPrices}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        loading={loading}
+        error={error}
       />
     </div>
   );

@@ -1,69 +1,49 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import './StockList.css';
 
 function StockList({ data, onEdit, onDelete, loading, error }) {
   const [hoveredIndex, setHoveredIndex] = useState(null);
 
   if (loading) {
-    return <div>Loading stock prices...</div>;
+    return <div className="status-message">Loading stock prices...</div>;
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div className="status-message error">{error}</div>;
   }
 
   return (
-    <div>
-      {data.map((h, idx) => (
+    <div className="stock-list">
+      {data.map((holding, idx) => (
         <div
-          key={idx}
-          style={{
-            border: '1px solid #ccc',
-            borderRadius: '8px',
-            margin: '16px',
-            padding: '16px',
-            backgroundColor: '#fff',
-            width: '90%',
-            marginLeft: '4%',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            marginBottom: '8px',
-            position: 'relative'
-          }}
+          key={holding.ticker}
+          className="stock-item"
           onMouseEnter={() => setHoveredIndex(idx)}
           onMouseLeave={() => setHoveredIndex(null)}
         >
-          <table>
-            <tr>
-              <td>
-                <div>Ticker: {h.ticker}</div>
-              </td>
-              <td>
-                <div style={ {marginLeft: '30px'} }>Price: {h.price}</div>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <div>Quantity: {h.quantity}</div>
-              </td>
-              <td>
-                <div style={ {marginLeft: '30px'} }>Total: {h.totalValue}</div>
-              </td>
-            </tr>
-          </table>
+          <div className="stock-content">
+            <div className="stock-detail">
+              <span className="stock-label">Ticker</span>
+              <span className="stock-value">{holding.ticker}</span>
+            </div>
+            <div className="stock-detail">
+              <span className="stock-label">Price</span>
+              <span className="stock-value">${holding.price.toFixed(2)}</span>
+            </div>
+            <div className="stock-detail">
+              <span className="stock-label">Quantity</span>
+              <span className="stock-value">{holding.quantity}</span>
+            </div>
+            <div className="stock-detail">
+              <span className="stock-label">Total Value</span>
+              <span className="stock-value">${holding.totalValue.toFixed(2)}</span>
+            </div>
+          </div>
+          
           {hoveredIndex === idx && (
-            <div
-              style={{
-                position: 'absolute',
-                right: '8px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                display: 'flex',
-                flexDirection: 'row',
-                gap: '8px'
-              }}
-            >
-              <button onClick={() => onEdit(h)}>Edit</button>
-              <button onClick={() => onDelete(h.ticker)}>Delete</button>
+            <div className="stock-actions">
+              <button onClick={() => onEdit(holding)}>Edit</button>
+              <button className="delete" onClick={() => onDelete(holding.ticker)}>Delete</button>
             </div>
           )}
         </div>

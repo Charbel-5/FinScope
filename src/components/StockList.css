@@ -1,0 +1,97 @@
+.stock-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .stock-item {
+    background: var(--neutral-100);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    box-shadow: var(--shadow-md);
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  
+  .stock-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .stock-content {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  
+  .stock-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .stock-label {
+    color: var(--neutral-400);
+    font-size: 0.9rem;
+  }
+  
+  .stock-value {
+    color: var(--neutral-600);
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  
+  .stock-actions {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 8px;
+  }
+  
+  .stock-actions button {
+    padding: var(--space-xs) var(--space-sm);
+    border: none;
+    border-radius: var(--radius-sm);
+    background-color: var(--primary);
+    color: var(--neutral-100);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .stock-actions button:hover {
+    background-color: var(--primary-dark);
+  }
+  
+  .stock-actions button.delete {
+    background-color: var(--error);
+  }
+  
+  .stock-actions button.delete:hover {
+    background-color: #d05555;
+  }
+  
+  .status-message {
+    text-align: center;
+    padding: 20px;
+    color: var(--neutral-600);
+  }
+  
+  .status-message.error {
+    color: var(--error);
+  }
+  
+  @media (max-width: 768px) {
+    .stock-content {
+      grid-template-columns: 1fr;
+    }
+  
+    .stock-actions {
+      position: static;
+      transform: none;
+      margin-top: 16px;
+      justify-content: flex-end;
+    }
+  }

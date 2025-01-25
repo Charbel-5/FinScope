@@ -219,7 +219,7 @@ function Stats() {
                 </PieChart>
               </div>
             ) : (
-              <div>No expense data available</div>
+              <div className="no-data-message">No expense data available</div>
             )}
           </div>
 
@@ -247,7 +247,7 @@ function Stats() {
                 </PieChart>
               </div>
             ) : (
-              <div>No income data available</div>
+              <div className="no-data-message">No income data available</div>
             )}
           </div>
         </div>
@@ -303,7 +303,7 @@ function Stats() {
               </PieChart>
             </div>
           ) : (
-            <div>No data available</div>
+            <div className="no-data-message">No data available</div>
           )}
         </div>
       </div>
