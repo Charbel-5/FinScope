@@ -1,13 +1,40 @@
 .transaction-box {
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  border: 1px solid var(--neutral-300);
+  border-radius: var(--radius-md);
   margin: 16px;
   padding: 16px;
-  background-color: #fff;
-  width:90%;
+  background-color: var(--neutral-100);
+  width: 90%;
   margin-left: 4%;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-md);
   margin-bottom: 8px;
+  transition: all 0.2s ease;
+}
+
+.transaction-box:hover {
+  background-color: var(--neutral-50);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.transaction {
+  border-left: 4px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.transaction:hover.Income {
+  border-left: 4px solid var(--success);
+  padding-left: var(--space-md);
+}
+
+.transaction:hover.Expense {
+  border-left: 4px solid var(--error);
+  padding-left: var(--space-md);
+}
+
+.transaction:hover.Transfer {
+  border-left: 4px solid var(--info);
+  padding-left: var(--space-md);
 }
 
 @media (max-width: 768px) {

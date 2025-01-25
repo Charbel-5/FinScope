@@ -3,12 +3,24 @@ import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS } from 'chart.js/auto';
 import './DebtCalculator.css';
 
+// Add this default chart data at the start of the component
+const defaultChartData = {
+  labels: Array.from({ length: 12 }, (_, i) => `Month ${i + 1}`),
+  datasets: [{
+    label: 'Remaining Debt',
+    data: Array(12).fill(0),
+    borderColor: 'rgba(75,192,192,1)',
+    fill: false,
+    borderDash: [5, 5] // Add dashed line for empty state
+  }]
+};
+
 function DebtCalculator() {
   const [interestRate, setInterestRate] = useState('');
   const [principal, setPrincipal] = useState('');
   const [periods, setPeriods] = useState('');
   const [payment, setPayment] = useState(0);
-  const [chartData, setChartData] = useState({});
+  const [chartData, setChartData] = useState(defaultChartData);
 
   const [nominalRate, setNominalRate] = useState('');
   const [compoundingFrequency, setCompoundingFrequency] = useState('daily');
@@ -75,108 +87,129 @@ function DebtCalculator() {
   };
 
   return (
-    <div>
-      <div className="calculator-container">
-
+    <div className="calculator-container debt-calculator-page">
+      <div className="chart-container">
+        <Line 
+          data={chartData}
+          options={{
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.1)'
+                }
+              },
+              x: {
+                grid: {
+                  display: false
+                }
+              }
+            }
+          }}
+        />
+      </div>
+      <div className="calculator-sections">
         <div className="debt-calculator">
-        <h2>Debt Calculator</h2>
-          <table>
+          <h2>Debt Calculator</h2>
+          <table className="debt-calculator-table">
             <tr>
-              <td><label>Annual Interest Rate (%): </label></td>
-              <td> 
+              <td className="debt-calculator-cell debt-calculator-label-cell">
+                <label>Annual Interest Rate (%):</label>
+              </td>
+              <td className="debt-calculator-cell">
                 <input
-              type="number"
-              value={interestRate}
-              onChange={(e) => setInterestRate(e.target.value)}
-              />
+                  className="debt-calculator-input"
+                  type="number"
+                  value={interestRate}
+                  onChange={(e) => setInterestRate(e.target.value)}
+                />
               </td>
             </tr>
             <tr>
-              <td>
+              <td className="debt-calculator-cell debt-calculator-label-cell">
                 <label>Principal: </label>
               </td>
-              <td>
-              <input
-                type="number"
-                value={principal}
-                onChange={(e) => setPrincipal(e.target.value)}
-              />
+              <td className="debt-calculator-cell">
+                <input
+                  className="debt-calculator-input"
+                  type="number"
+                  value={principal}
+                  onChange={(e) => setPrincipal(e.target.value)}
+                />
               </td>
             </tr>
             <tr>
-              <td>   
+              <td className="debt-calculator-cell debt-calculator-label-cell">
                 <label>Total Payments: </label>
               </td>
-              <td>
-              <input
-                type="number"
-                value={periods}
-                onChange={(e) => setPeriods(e.target.value)}
-              />
+              <td className="debt-calculator-cell">
+                <input
+                  className="debt-calculator-input"
+                  type="number"
+                  value={periods}
+                  onChange={(e) => setPeriods(e.target.value)}
+                />
               </td>
             </tr>
           </table>
-
-          
-        
-          <button onClick={calculateDebtPayment}>Compute Payment</button>
-          <h3>Periodic Payment: {payment}</h3>
+          <button className="debt-calculator-button" onClick={calculateDebtPayment}>
+            Compute Payment
+          </button>
+          <h3 className="debt-calculator-result">Periodic Payment: {payment}</h3>
         </div>
-
-
-
         <div className="rate-calculator">
-        <h2>Effective Interest Rate Calculator</h2>
-        <table>
+          <h2>Effective Interest Rate Calculator</h2>
+          <table className="rate-calculator-table">
             <tr>
-              <td>
+              <td className="rate-calculator-cell rate-calculator-label-cell">
                 <label>Nominal Annual Rate (%): </label>
               </td>
-              <td>
-              <input
-                type="number"
-                value={nominalRate}
-                onChange={(e) => setNominalRate(e.target.value)}
-              />
+              <td className="rate-calculator-cell">
+                <input
+                  className="rate-calculator-input"
+                  type="number"
+                  value={nominalRate}
+                  onChange={(e) => setNominalRate(e.target.value)}
+                />
               </td>
             </tr>
             <tr>
-              <td>
+              <td className="rate-calculator-cell rate-calculator-label-cell">
                 <label>Compounding Frequency:</label>
               </td>
-              <td>
-
-              <select
-                value={compoundingFrequency}
-                onChange={(e) => setCompoundingFrequency(e.target.value)}
-              >
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="custom">Custom</option>
-              </select>
-              {compoundingFrequency === 'custom' && (
-                <input
-                  type="number"
-                  placeholder="Times per year"
-                  value={customFrequency}
-                  onChange={(e) => setCustomFrequency(e.target.value)}
-                />
-              )}
+              <td className="rate-calculator-cell">
+                <select
+                  className="rate-calculator-select"
+                  value={compoundingFrequency}
+                  onChange={(e) => setCompoundingFrequency(e.target.value)}
+                >
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="custom">Custom</option>
+                </select>
+                {compoundingFrequency === 'custom' && (
+                  <input
+                    className="rate-calculator-input"
+                    type="number"
+                    placeholder="Times per year"
+                    value={customFrequency}
+                    onChange={(e) => setCustomFrequency(e.target.value)}
+                  />
+                )}
               </td>
             </tr>
-        </table>
-
-          <button onClick={computeEffectiveRate}>Compute Effective Rate</button>
-          <h3>Effective Rate: {effectiveRate}%</h3>
+          </table>
+          <button className="rate-calculator-button" onClick={computeEffectiveRate}>
+            Compute Effective Rate
+          </button>
+          <h3 className="rate-calculator-result">Effective Rate: {effectiveRate}%</h3>
         </div> 
       </div>
-      <div className="chart-container">
-        {chartData.labels && <Line data={chartData} />}
-      </div>
     </div>
-   
   );
 }
 

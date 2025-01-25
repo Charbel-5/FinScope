@@ -1,15 +1,71 @@
-.transactions-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
+.transaction {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--neutral-300);
+  position: relative;
+  transition: all 0.2s ease;
 }
 
-.transaction-list {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
+.transaction:hover {
+  background-color: var(--primary-light);
+  padding-left: var(--space-lg);
+}
+
+.transaction:last-child {
+  border-bottom: none;
+}
+
+.transaction:hover.Income {
+  background-color: rgba(97, 239, 97, 0.1); /* Using --success with opacity */
+}
+
+.transaction:hover.Expense {
+  background-color: rgba(240, 105, 105, 0.1); /* Using --error with opacity */
+}
+
+.transaction:hover.Transfer {
+  background-color: rgba(82, 200, 240, 0.1); /* Using --info with opacity */
+}
+
+.transaction-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.transaction-name {
+  font-weight: 600;
+  color: var(--neutral-600);
+  font-size: 1.1rem;
+}
+
+.transaction-meta {
+  color: var(--neutral-400);
+  font-size: 0.9rem;
+}
+
+.transaction-accounts {
+  color: var(--neutral-500);
+  font-size: 0.95rem;
+}
+
+.transaction-amount {
+  font-weight: bold;
+  position: absolute;
+  right: 10px;
+  top: 30%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+}
+
+.transaction-actions {
+  position: absolute;
+  right: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
+  display: none;
+  gap: var(--space-xs);
 }
 
 .add-transaction-button {
@@ -19,32 +75,47 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
+  z-index: 2;
+}
+
+.transaction-actions button {
+  padding: var(--space-xs) var(--space-sm);
+  border: none;
+  border-radius: var(--radius-sm);
   background-color: var(--primary);
   color: var(--neutral-100);
-  border: none;
-  font-size: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow-md);
   cursor: pointer;
-  transition: all 0.3s ease;
-  z-index: 100;
+  transition: all 0.2s ease;
 }
 
-.add-transaction-button:hover {
+.transaction-actions button:hover {
   background-color: var(--primary-dark);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
 }
 
-.no-transactions-message {
-  text-align: center;
-  padding: 40px;
-  color: var(--neutral-500);
-  font-size: 1.1rem;
-  background: var(--neutral-200);
-  border-radius: var(--radius-md);
-  margin: 20px auto;
-  max-width: 500px;
+.transaction:hover .transaction-actions {
+  display: flex;
+}
+
+.amount.Income { 
+  color: var(--success);
+}
+
+.amount.Expense { 
+  color: var(--error);
+}
+
+.amount.Transfer { 
+  color: var(--info);
+}
+
+.transaction .type.Income {
+  color: var(--success);
+}
+
+.transaction .type.Expense {
+  color: var(--error);
+}
+
+.transaction .type.Transfer {
+  color: var(--info);
 }

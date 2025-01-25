@@ -7,7 +7,16 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import './Stats.css';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#FF6B6B'];
+const COLORS = [
+  '#4ECDC4',  // bright teal
+  '#FF6B6B',  // vibrant coral
+  '#A78BFA',  // bright purple
+  '#95D5B2',  // fresh mint
+  '#FFD93D',  // sunny yellow
+  '#FF8C42',  // orange
+  '#4A90E2',  // bright blue
+  '#F472B6'   // pink
+];
 
 function transformAllTransactionsForStockChart(allTransactions) {
   let running = 0;
@@ -246,7 +255,7 @@ function Stats() {
         <div className="chart-container">
           <h3>Daily Income/Expense</h3>
           <div className="responsive-chart">
-            <BarChart width={500} height={300} data={dailyData}>
+            <BarChart width={500} height={600} data={dailyData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
@@ -273,7 +282,7 @@ function Stats() {
         </div>
 
         <div className="pie-chart-container">
-          <h3>Monthly Total Distribution</h3>
+          <h3 className='headerStyle'>Monthly Total Distribution</h3>
           {totalPieData.length > 0 ? (
             <div className="responsive-chart">
               <PieChart width={400} height={300}>
