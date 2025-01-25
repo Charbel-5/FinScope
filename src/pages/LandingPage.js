@@ -22,7 +22,7 @@ function LandingPage() {
             <div className="navbar__brand">FinScope</div>
           </div>
           <div className="navbar__actions">
-            <button className="navbar__link" onClick={() => setShowLogin(true)}>Login</button>
+            <button className="btn--signup" onClick={() => setShowLogin(true)}>Login</button>
             <button className="btn--signup" onClick={() => setShowSignup(true)}>Sign Up</button>
           </div>
           <div className="navbar__burger" onClick={toggleMobileMenu}>
