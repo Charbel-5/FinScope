@@ -43,6 +43,12 @@ function Stats() {
   const { user } = useAuth();
   const stockData = transformAllTransactionsForStockChart(transactions);
 
+  // Add getCurrentMonthYear helper function
+  const getCurrentMonthYear = () => {
+    const now = new Date();
+    return now.toLocaleString('default', { month: 'long', year: 'numeric' });
+  };
+
   // Fetch currency info and conversion rates
   useEffect(() => {
     async function fetchCurrencyInfo() {
@@ -170,7 +176,9 @@ function Stats() {
     <div className="stats-container">
       <div className="monthly-overview">
         <MonthlySwitcher
-          displayMonthYear={availableMonths[currentIndex] || ''}
+          displayMonthYear={transactionsGrouped.length === 0 ? 
+            getCurrentMonthYear() : 
+            (availableMonths[currentIndex] || '')}
           onPrevious={handlePrevious}
           onNext={handleNext}
           availableMonths={availableMonths}

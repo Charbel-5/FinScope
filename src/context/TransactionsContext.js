@@ -13,6 +13,12 @@ function useTransactionsLogic() {
   const [error, setError] = useState(null);
   const { user, isAuthenticated } = useAuth();
 
+  // Add getCurrentMonthYear helper
+  const getCurrentMonthYear = () => {
+    const now = new Date();
+    return now.toLocaleString('default', { month: 'long', year: 'numeric' });
+  };
+
   useEffect(() => {
     async function fetchTransactions() {
       if (!user?.userId || !isAuthenticated) return;
@@ -33,10 +39,13 @@ function useTransactionsLogic() {
   const sortedTransactions = sortTransactionsByDateDescending(transactions);
   const transactionsGrouped = groupTransactionsByMonthFromCurrent(sortedTransactions);
 
-  const availableMonths = transactionsGrouped.map((g) => {
-    const date = new Date(g.year, g.month, 1);
-    return date.toLocaleString('default', { month: 'long', year: 'numeric' });
-  });
+  // Update availableMonths logic
+  const availableMonths = transactions.length === 0 
+    ? [getCurrentMonthYear()]  // Return current month if no transactions
+    : transactionsGrouped.map((g) => {
+        const date = new Date(g.year, g.month, 1);
+        return date.toLocaleString('default', { month: 'long', year: 'numeric' });
+      });
 
   async function handleSave(updatedTxn) {
     try {
