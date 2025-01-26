@@ -74,14 +74,23 @@
   }
   
   .status-message {
+    color: var(--neutral-400);
+    font-size: 1.2rem;
     text-align: center;
-    padding: 20px;
-    color: var(--neutral-600);
+    padding: 2rem;  
+    margin-top: 130px;
+
   }
   
   .status-message.error {
-    color: var(--error);
+    color: var(--neutral-400);
+    font-size: 1.2rem;
+    text-align: center;
+    padding: 2rem;
+    margin-top: 130px;
   }
+  
+
   
   @media (max-width: 768px) {
     .stock-content {

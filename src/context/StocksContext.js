@@ -17,15 +17,19 @@ function StocksProvider({ children }) {
   useEffect(() => {
     async function fetchHoldings() {
       if (!user) return; // Add this check
+      setLoading(true); // Start loading
       try {
         const response = await axios.get(`/api/user_stocks/${user.userId}`);
         setStockHoldings(response.data.map(holding => ({
           ticker: holding.stock_ticker,
           quantity: holding.stock_amount
         })));
+        setError(null);
       } catch (err) {
         console.error('Failed to fetch stock holdings:', err);
-        setError('Failed to fetch stock holdings');
+        setError('Add your first stock to track its performance'); // Changed error message
+      } finally {
+        setLoading(false); // Stop loading regardless of result
       }
     }
     fetchHoldings();

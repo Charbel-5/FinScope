@@ -9,7 +9,11 @@ function StockList({ data, onEdit, onDelete, loading, error }) {
   }
 
   if (error) {
-    return <div className="status-message error">{error}</div>;
+    return <div className="status-message">{error}</div>; // Removed error class
+  }
+
+  if (!data || data.length === 0) {
+    return <div className="status-message">Add your first stock to track its performance</div>;
   }
 
   return (

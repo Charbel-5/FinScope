@@ -183,6 +183,22 @@ button[type="button"]:hover {
   margin-bottom: 16px;
 }
 
+/* No accounts message */
+.no-accounts-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 200px);
+}
+
+.no-accounts-message {
+  color: var(--neutral-400);
+  font-size: 1.2rem;
+  text-align: center;
+  padding: 2rem;
+  margin-top: -210px;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .accounts-header {

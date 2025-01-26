@@ -115,26 +115,35 @@ function Accounts() {
           <h2 className='liabilities'>Liabilities: {liabilities.toFixed(2)} {primaryCurrencySymbol}</h2>
           <h2 className={`${total > 0 ? 'assets' : 'liabilities'}`}>Total: {total.toFixed(2)} {primaryCurrencySymbol}</h2>
         </div>
-        {groupedAccounts.map(([type, accounts]) => (
-          <div key={type} className="account-wrapper">
-            <div className="account-group-title">{type}</div>
-            {accounts.map((acc) => (
-              <div key={acc.account_id} className="account-item">
-                <Account
-                  accountName={acc.name}
-                  balance={acc.total_amount}
-                  currencySymbol={acc.currency_symbol}
-                  onAccountClick={() => setSelectedAccount(acc.name)}
-                  onEdit={() => {
-                    setEditAcc(acc);
-                    setEditForm({ name: acc.name }); // Initialize editForm with current name
-                  }}
-                  onDelete={() => handleDelete(acc.account_id)}
-                />
-              </div>
-            ))}
+        
+        {groupedAccounts.length === 0 ? (
+          <div className="no-accounts-container">
+            <div className="no-accounts-message">
+              No accounts yet. Click the + button to add your first account.
+            </div>
           </div>
-        ))}
+        ) : (
+          groupedAccounts.map(([type, accounts]) => (
+            <div key={type} className="account-wrapper">
+              <div className="account-group-title">{type}</div>
+              {accounts.map((acc) => (
+                <div key={acc.account_id} className="account-item">
+                  <Account
+                    accountName={acc.name}
+                    balance={acc.total_amount}
+                    currencySymbol={acc.currency_symbol}
+                    onAccountClick={() => setSelectedAccount(acc.name)}
+                    onEdit={() => {
+                      setEditAcc(acc);
+                      setEditForm({ name: acc.name }); // Initialize editForm with current name
+                    }}
+                    onDelete={() => handleDelete(acc.account_id)}
+                  />
+                </div>
+              ))}
+            </div>
+          ))
+        )}
       </div>
 
       <button className="add-account-button" onClick={() => setShowForm(true)}>
