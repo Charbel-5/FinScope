@@ -1001,13 +1001,13 @@ app.get('/api/complex/userAttributes/:userId', async (req, res) => {
 // 2) Update user currencies, delete everything except user, new currencies, stocks
 app.put('/api/complex/userCurrencies/:userId', async (req, res) => {
   const { userId } = req.params;
-  const { primary_currency_name, secondary_currency_name } = req.body;
+  const { primary_currency_name, secondary_currency_name, conversion_rate } = req.body; // Add conversion_rate
   const conn = await pool.getConnection();
   
   try {
     await conn.beginTransaction();
 
-    // Get currency IDs
+    // Get currency IDs and update user currencies - existing code
     const [[primaryCurrency]] = await conn.query(
       'SELECT currency_id FROM currency WHERE currency_name = ?',
       [primary_currency_name]
@@ -1031,10 +1031,17 @@ app.put('/api/complex/userCurrencies/:userId', async (req, res) => {
       [primaryCurrency.currency_id, secondaryCurrency.currency_id, userId]
     );
 
-    // Delete related data
+    // Delete existing data
     await conn.query('DELETE FROM transaction WHERE user_id = ?', [userId]);
     await conn.query('DELETE FROM account WHERE user_id = ?', [userId]);
     await conn.query('DELETE FROM currency_rate WHERE user_id = ?', [userId]);
+
+    // Add new currency rate record with current date
+    const currentDate = new Date().toISOString().slice(0, 10);
+    await conn.query(
+      'INSERT INTO currency_rate (conversion_rate, start_date, user_id) VALUES (?, ?, ?)',
+      [conversion_rate, currentDate, userId]
+    );
 
     await conn.commit();
     res.sendStatus(200);

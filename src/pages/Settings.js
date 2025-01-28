@@ -168,7 +168,8 @@ function Settings() {
       if (currenciesChanged) {
         await axios.put(`/api/complex/userCurrencies/${user.userId}`, {
           primary_currency_name: formData.mainCurrencyName,
-          secondary_currency_name: formData.secondaryCurrencyName
+          secondary_currency_name: formData.secondaryCurrencyName,
+          conversion_rate: parseFloat(formData.conversionRate) // Add this line
         });
       }
 

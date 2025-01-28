@@ -7,6 +7,7 @@ import axios from 'axios';
 import config from '../Config';
 import './Accounts.css';
 import { useAuth } from '../context/AuthContext';
+import { AlertModal } from '../components/AlertModal';
 
 function Accounts() {
   const { user } = useAuth();
@@ -19,6 +20,8 @@ function Accounts() {
   const [currencies, setCurrencies] = useState([]);
   const [accountTypes, setAccountTypes] = useState([]);
   const [addFormError, setAddFormError] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState(null);
 
   useEffect(() => {
     async function fetchCurrencies() {
@@ -95,6 +98,12 @@ function Accounts() {
   }
 
   async function handleDelete(id) {
+    if (!showDeleteConfirm) {
+      setAccountToDelete(id);
+      setShowDeleteConfirm(true);
+      return;
+    }
+    
     await deleteAccount(id);
     window.location.reload();
   }
@@ -232,6 +241,22 @@ function Accounts() {
         <AccountDetails
           accountName={selectedAccount}
           onClose={() => setSelectedAccount(null)}
+        />
+      )}
+
+      {showDeleteConfirm && (
+        <AlertModal
+          message="Deleting this account will also delete all associated transactions. Are you sure you want to continue?"
+          type="warning"
+          onClose={() => {
+            setShowDeleteConfirm(false);
+            setAccountToDelete(null);
+          }}
+          onConfirm={() => {
+            setShowDeleteConfirm(false);
+            handleDelete(accountToDelete);
+          }}
+          showConfirmButton={true}
         />
       )}
     </>

@@ -32,6 +32,21 @@
   background-color: #0b5ed7;
 }
 
+.switches button.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.switches button.disabled:hover {
+  background-color: inherit;
+}
+
+.switches button.disabled.active {
+  background-color: #04AA6D;
+  color: #fff;
+}
+
 form {
   display: flex;
   flex-direction: column;

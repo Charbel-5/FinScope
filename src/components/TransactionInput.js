@@ -12,7 +12,7 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
 
   const [formData, setFormData] = useState({
     transaction_id: initialTransaction?.transaction_id || null,
-    transaction_date: initialTransaction?.transaction_date || '',
+    transaction_date: initialTransaction?.transaction_date || new Date().toISOString().split('T')[0],
     transaction_amount: initialTransaction?.transaction_amount || '',
     from_account: initialTransaction?.from_account || '',
     to_account: initialTransaction?.to_account || '',
@@ -141,7 +141,7 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
       newErrors.transaction_date = 'Date is required';
     }
 
-    // Amount validation
+    // Amount validation  
     if (!formData.transaction_amount || formData.transaction_amount <= 0) {
       newErrors.transaction_amount = 'Please enter a valid positive amount';
     }
@@ -151,12 +151,11 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
       newErrors.from_account = 'Please select an account';
     }
 
-    // To account validation for transfers
+    // To account validation for transfers - Sequential validation
     if (transactionType === 'Transfer') {
       if (validator.isEmpty(formData.to_account)) {
-        newErrors.to_account = 'Please select a destination account';
-      }
-      if (formData.from_account === formData.to_account) {
+        newErrors.to_account = 'Please select an account';
+      } else if (formData.from_account === formData.to_account) {
         newErrors.to_account = 'Source and destination accounts must be different';
       }
     }
@@ -188,23 +187,26 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="switches">
           <button
-            className={transactionType === 'Income' ? 'active' : ''}
-            onClick={() => setTransactionType('Income')}
+            className={`${transactionType === 'Income' ? 'active' : ''} ${initialTransaction ? 'disabled' : ''}`}
+            onClick={() => !initialTransaction && setTransactionType('Income')}
             type="button"
+            disabled={initialTransaction}
           >
             Income
           </button>
           <button
-            className={transactionType === 'Expense' ? 'active' : ''}
-            onClick={() => setTransactionType('Expense')}
+            className={`${transactionType === 'Expense' ? 'active' : ''} ${initialTransaction ? 'disabled' : ''}`}
+            onClick={() => !initialTransaction && setTransactionType('Expense')}
             type="button"
+            disabled={initialTransaction}
           >
             Expense
           </button>
           <button
-            className={transactionType === 'Transfer' ? 'active' : ''}
-            onClick={() => setTransactionType('Transfer')}
+            className={`${transactionType === 'Transfer' ? 'active' : ''} ${initialTransaction ? 'disabled' : ''}`}
+            onClick={() => !initialTransaction && setTransactionType('Transfer')}
             type="button"
+            disabled={initialTransaction}
           >
             Transfer
           </button>
