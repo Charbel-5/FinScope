@@ -21,6 +21,7 @@ function Settings() {
   const [alertType, setAlertType] = useState('info');
   const [showCurrencyConfirm, setShowCurrencyConfirm] = useState(false);
   const [pendingCurrencyChange, setPendingCurrencyChange] = useState(null);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     async function fetchData() {
@@ -66,6 +67,23 @@ function Settings() {
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Clear errors when field changes
+    if (name === 'email') {
+      const emailError = validateEmail(value);
+      setErrors(prev => ({
+        ...prev,
+        email: emailError
+      }));
+    }
+    
+    if (name === 'password') {
+      const passwordError = validatePassword(value);
+      setErrors(prev => ({
+        ...prev,
+        password: passwordError
+      }));
+    }
   };
 
   const handleCurrencyChange = (e) => {
@@ -80,41 +98,60 @@ function Settings() {
   };
 
   const validatePassword = (password) => {
-    if (password === '********') return true; // Skip validation if password unchanged
-    
-    const errors = [];
+    if (password === '********') return ''; // Skip validation if password unchanged
     
     if (password.length < 8) {
-      errors.push('Password must be at least 8 characters long');
+      return 'Password must be at least 8 characters long';
     }
     if (!/[A-Z]/.test(password)) {
-      errors.push('Include at least one uppercase letter');
-    } 
-    if (!/[0-9]/.test(password)) {
-      errors.push('Include at least one number');
+      return 'Password must include at least one uppercase letter';
     }
-  
-    return errors;
+    if (!/[0-9]/.test(password)) {
+      return 'Password must include at least one number';
+    }
+    return '';
+  };
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return 'Please enter a valid email address';
+    }
+    return '';
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
     
+    // Validate all fields before saving
+    const emailError = validateEmail(formData.email);
+    const passwordError = validatePassword(formData.password);
+    
+    const newErrors = {
+      email: emailError,
+      password: passwordError
+    };
+    
+    setErrors(newErrors);
+    
+    // Don't save if there are any errors
+    if (emailError || passwordError) {
+      return;
+    }
+    
+    // Rest of your existing save logic
     try {
       const currenciesChanged = 
         formData.mainCurrencyName !== initialData.mainCurrencyName || 
         formData.secondaryCurrencyName !== initialData.secondaryCurrencyName;
 
-      // Show second confirmation if currencies changed
       if (currenciesChanged) {
         setShowCurrencyConfirm(true);
         setPendingCurrencyChange({ type: 'save' });
         return;
       }
 
-      // If no currency changes, proceed with normal save
       await saveChanges();
-
     } catch (err) {
       setAlertMessage(`Error saving settings: ${err.response?.data?.error || err.message}`);
       setAlertType('error');
@@ -250,6 +287,7 @@ function Settings() {
               value={formData.email}
               onChange={handleFieldChange}
             />
+            {errors.email && <span className="error-message">{errors.email}</span>}
           </div>
 
           <div className="settings-group">
@@ -261,6 +299,7 @@ function Settings() {
               onChange={handleFieldChange}
               placeholder="Leave blank to keep current password"
             />
+            {errors.password && <span className="error-message">{errors.password}</span>}
           </div>
 
           <div className="settings-group">
@@ -289,7 +328,7 @@ function Settings() {
           message={
             pendingCurrencyChange?.type === 'save' 
               ? "Changing currencies will erase all your transactions, accounts, and other data. Are you sure you want to continue?"
-              : "Changing currency will require saving all settings. You will be asked to confirm data deletion when saving."
+              : "Changing currencies will erase all your transactions, accounts, and other data. Are you sure you want to continue?"
           }
           type="warning"
           onClose={() => pendingCurrencyChange?.type === 'save' 

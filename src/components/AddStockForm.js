@@ -1,31 +1,47 @@
-// ...existing code...
 import React, { useState } from 'react';
 import { useStocks } from '../context/StocksContext';
 import './AddStockForm.css';
 
 function AddStockForm({ onClose, initialTicker, initialQuantity, onEditStock }) {
-  const { addStock } = useStocks();
+  const { addStock, stockHoldings } = useStocks();
   const [ticker, setTicker] = useState(initialTicker || '');
   const [quantity, setQuantity] = useState(initialQuantity || '');
+  const [message, setMessage] = useState('');
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!ticker || !quantity) return;
     
-    if (initialTicker) {
-      // Editing existing
-      onEditStock(initialTicker, ticker.trim().toUpperCase(), quantity);
-    } else {
-      // Adding new
-      addStock(ticker.trim().toUpperCase(), quantity);
+    try {
+      if (initialTicker) {
+        // Editing existing
+        await onEditStock(initialTicker, ticker.trim().toUpperCase(), quantity);
+      } else {
+        // Check if stock exists
+        const exists = stockHoldings.some(
+          s => s.ticker.toUpperCase() === ticker.trim().toUpperCase()
+        );
+        
+        // Adding new or updating existing
+        await addStock(ticker.trim().toUpperCase(), quantity);
+        
+        if (exists) {
+          setMessage('Updated existing stock quantity');
+          setTimeout(onClose, 1500); // Close after showing message
+          return;
+        }
+      }
+      onClose();
+    } catch (err) {
+      setMessage('Error: ' + err.message);
     }
-    onClose();
   }
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h3>Add New Stock</h3>
+        <h3>{initialTicker ? 'Edit Stock' : 'Add New Stock'}</h3>
+        {message && <div className="message">{message}</div>}
         <form onSubmit={handleSubmit}>
           <input
             placeholder="Ticker"
@@ -38,7 +54,7 @@ function AddStockForm({ onClose, initialTicker, initialQuantity, onEditStock }) 
             onChange={(e) => setQuantity(e.target.value)}
           />
           <div>
-            <button type="submit">Add Stock</button>
+            <button type="submit">{initialTicker ? 'Edit Stock' : 'Add Stock'}</button>
           </div>
           <div>
             <button type="button" onClick={onClose}>Cancel</button>

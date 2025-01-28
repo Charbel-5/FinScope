@@ -75,16 +75,41 @@ function StocksProvider({ children }) {
 
   async function addStock(ticker, quantity) {
     try {
-      await axios.post('/api/user_stocks', {
-        stock_ticker: ticker.toUpperCase(),
-        stock_amount: parseFloat(quantity),
-        user_id: user.userId
-      });
+      // First check if user already owns this stock
+      const response = await axios.get(`/api/user_stocks/${user.userId}`);
+      const existingStock = response.data.find(
+        s => s.stock_ticker.toUpperCase() === ticker.toUpperCase()
+      );
       
-      setStockHoldings(prev => [...prev, { 
-        ticker: ticker.toUpperCase(), 
-        quantity: parseFloat(quantity) 
-      }]);
+      if (existingStock) {
+        // If stock exists, update its quantity instead
+        const newQuantity = parseFloat(existingStock.stock_amount) + parseFloat(quantity);
+        await axios.put(`/api/user_stocks/${existingStock.stock_id}`, {
+          stock_ticker: ticker.toUpperCase(),
+          stock_amount: newQuantity,
+          user_id: user.userId
+        });
+        
+        setStockHoldings(prev => 
+          prev.map(s => 
+            s.ticker === ticker.toUpperCase()
+              ? { ...s, quantity: newQuantity }
+              : s
+          )
+        );
+      } else {
+        // If stock doesn't exist, create new entry
+        await axios.post('/api/user_stocks', {
+          stock_ticker: ticker.toUpperCase(),
+          stock_amount: parseFloat(quantity),
+          user_id: user.userId
+        });
+        
+        setStockHoldings(prev => [...prev, {
+          ticker: ticker.toUpperCase(),
+          quantity: parseFloat(quantity)
+        }]);
+      }
     } catch (err) {
       console.error('Failed to add stock:', err);
       throw err;
