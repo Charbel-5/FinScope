@@ -377,6 +377,8 @@ VALUES
     ('Petty cash', 1),
 
     ('Bonus', 1),
+
+    ('Other', 1),
  
     -- Expense categories (transaction_type_id = 2)
 
@@ -394,7 +396,10 @@ VALUES
 
     ('Household',  2),
 
-    ('Gift',   2);
+    ('Gift',   2),
+
+    ('Other', 2);
+
 
 
  
