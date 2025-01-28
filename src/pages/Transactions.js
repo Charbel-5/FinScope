@@ -1,4 +1,4 @@
-import { useState } from 'react'; //we imported react hook to manage componenet state
+import { useState, useEffect } from 'react'; //we imported react hook to manage componenet state
 import TransactionBox from '../components/TransactionBox';
 import Transaction from '../components/Transaction';
 import MonthlySwitcher from '../components/MonthlySwitcher';
@@ -23,6 +23,13 @@ function Transactions() {
   // Manage which month's index is displayed
   //index used for tracking where we are in the month/year
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Add effect to reset index when transactions group becomes empty
+  useEffect(() => {
+    if (transactionsGrouped.length === 0 || currentIndex >= transactionsGrouped.length) {
+      setCurrentIndex(0);
+    }
+  }, [transactionsGrouped.length, currentIndex]);
 
   //so it makes sense for previous to increment the index
   //the important thing here is the condition that limits how much we can increment
@@ -77,6 +84,15 @@ function Transactions() {
     setShowForm(true);
   };
 
+  // Modify handleDelete to wrap the context's handleDelete
+  const handleTransactionDelete = async (id) => {
+    await handleDelete(id);
+    // If after deletion there are no more transactions in current month,
+    // and we're not at index 0, reset to most recent month
+    if (currentGroup.transactions?.length <= 1 && currentIndex !== 0) {
+      setCurrentIndex(0);
+    }
+  };
 
   //----------- Finito with the functions -------//
 
@@ -137,7 +153,7 @@ function Transactions() {
                 type={txn.transaction_type}
                 currency={txn.currency_symbol}
                 onEdit={() => handleEdit(txn)}
-                onDelete={() => handleDelete(txn.transaction_id)}
+                onDelete={() => handleTransactionDelete(txn.transaction_id)}
               />
             </TransactionBox>
           ))
