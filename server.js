@@ -980,7 +980,7 @@ app.get('/api/complex/userAttributes/:userId', async (req, res) => {
       SELECT conversion_rate, DATE_FORMAT(start_date, '%Y-%m-%d') as start_date
       FROM currency_rate
       WHERE user_id = ?
-      ORDER BY start_date DESC
+      ORDER BY start_date DESC, currency_rate_id DESC
       LIMIT 1
     `;
     const [[rateRow]] = await pool.query(rateSql, [userId]);
@@ -1230,5 +1230,67 @@ app.get('/api/protected', (req, res) => {
     res.json({ message: 'Access granted', userId: decoded.userId });
   } catch (err) {
     res.status(403).send('Invalid or expired token');
+  }
+});
+
+// Update the complex transaction edit endpoint
+app.put('/api/complex/transaction/:transactionId', async (req, res) => {
+  const { transactionId } = req.params;
+  const {
+    transaction_date,
+    transaction_amount,
+    transaction_name,
+    transaction_type,
+    transaction_category,
+    from_account,
+    to_account
+  } = req.body;
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // Get existing transaction first
+    const [[existingTx]] = await conn.query(
+      'SELECT * FROM transaction WHERE transaction_id = ?',
+      [transactionId]
+    );
+
+    if (!existingTx) {
+      throw new Error('Transaction not found');
+    }
+
+    // Rest of the code remains the same...
+    // Update the transaction with the new values
+    await conn.query(`
+      UPDATE transaction
+      SET
+        transaction_date = CURRENT_DATE(), // Force current date to use latest conversion rate
+        transaction_amount = ?,
+        transaction_name = ?,
+        transaction_type_id = ?,
+        transaction_category_id = ?,
+        from_account_id = ?,
+        to_account_id = ?
+      WHERE transaction_id = ?
+    `, [
+      transaction_amount,
+      transaction_name, 
+      transaction_type_id,
+      transaction_category_id,
+      from_account_id,
+      to_account_id,
+      transactionId
+    ]);
+
+    await conn.commit();
+    res.sendStatus(200);
+
+  } catch (err) {
+    await conn.rollback();
+    console.error(err);
+    res.status(500).send('Error editing transaction');
+  } finally {
+    conn.release();
   }
 });

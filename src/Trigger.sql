@@ -16,13 +16,51 @@ BEGIN
         RETURN 1;
     END IF;
     
-    -- Get the rate closest to but not after the transaction date
+    -- Changed rate_id to currency_rate_id
     SELECT conversion_rate INTO v_rate
     FROM currency_rate 
     WHERE user_id = p_user_id
     AND start_date <= p_transaction_date
-    ORDER BY start_date DESC
+    ORDER BY start_date DESC, currency_rate_id DESC
     LIMIT 1;
+    
+    RETURN COALESCE(v_rate, 1);
+END //
+
+CREATE FUNCTION get_historical_conversion_rate(
+    p_user_id INT,
+    p_from_currency INT,
+    p_to_currency INT,
+    p_transaction_date DATE
+) RETURNS DECIMAL(15,6)
+DETERMINISTIC
+BEGIN
+    DECLARE v_rate DECIMAL(15,6);
+    
+    -- Return 1 if same currency
+    IF p_from_currency = p_to_currency THEN
+        RETURN 1;
+    END IF;
+    
+    -- First try to get rate exactly on or before transaction date
+    SELECT conversion_rate INTO v_rate
+    FROM currency_rate 
+    WHERE user_id = p_user_id
+    AND start_date <= p_transaction_date
+    ORDER BY start_date DESC, currency_rate_id DESC
+    LIMIT 1;
+    
+    -- If no rate found for that date or earlier, get the oldest rate
+    IF v_rate IS NULL THEN
+        SELECT MIN(conversion_rate) INTO v_rate
+        FROM currency_rate
+        WHERE user_id = p_user_id
+        AND start_date = (
+            SELECT MIN(start_date)
+            FROM currency_rate
+            WHERE user_id = p_user_id
+        );
+    END IF;
     
     RETURN COALESCE(v_rate, 1);
 END //
@@ -43,7 +81,7 @@ BEGIN
         -- Transfer case
         SELECT currency_id INTO to_currency
         FROM account WHERE account_id = NEW.to_account_id;
-        SET conv_rate = get_conversion_rate(NEW.user_id, from_currency, to_currency, NEW.transaction_date);
+        SET conv_rate = get_historical_conversion_rate(NEW.user_id, from_currency, to_currency, NEW.transaction_date);
         
         -- From account: subtract original amount
         UPDATE account 
@@ -52,18 +90,16 @@ BEGIN
         
         -- To account: apply conversion based on currency order
         IF from_currency < to_currency THEN
-            -- Converting to higher currency (e.g., LBP to USD)
             UPDATE account 
             SET total_amount = total_amount + (ABS(NEW.transaction_amount) / conv_rate)
             WHERE account_id = NEW.to_account_id;
         ELSE
-            -- Converting to lower currency (e.g., USD to LBP)
             UPDATE account 
             SET total_amount = total_amount + (ABS(NEW.transaction_amount) * conv_rate)
             WHERE account_id = NEW.to_account_id;
         END IF;
     ELSE
-        -- Income/Expense case
+        -- Income/Expense case remains unchanged
         IF NEW.transaction_type_id = 1 THEN -- Income
             UPDATE account 
             SET total_amount = total_amount + ABS(NEW.transaction_amount)
@@ -84,7 +120,7 @@ BEGIN
     DECLARE from_currency, to_currency, old_from_currency, old_to_currency INT;
     DECLARE conv_rate DECIMAL(15,6);
     
-    -- Reverse old transaction
+    -- First reverse the old transaction using OLD values and OLD date's rate
     IF OLD.to_account_id IS NOT NULL THEN
         -- Reverse old transfer
         SELECT currency_id INTO old_from_currency
@@ -92,7 +128,7 @@ BEGIN
         SELECT currency_id INTO old_to_currency
         FROM account WHERE account_id = OLD.to_account_id;
         
-        SET conv_rate = get_conversion_rate(OLD.user_id, old_from_currency, old_to_currency, OLD.transaction_date);
+        SET conv_rate = get_historical_conversion_rate(OLD.user_id, old_from_currency, old_to_currency, OLD.transaction_date);
         
         UPDATE account 
         SET total_amount = total_amount + ABS(OLD.transaction_amount)
@@ -107,28 +143,17 @@ BEGIN
             SET total_amount = total_amount - (ABS(OLD.transaction_amount) * conv_rate)
             WHERE account_id = OLD.to_account_id;
         END IF;
-    ELSE
-        -- Reverse old income/expense
-        IF OLD.transaction_type_id = 1 THEN -- Income
-            UPDATE account 
-            SET total_amount = total_amount - ABS(OLD.transaction_amount)
-            WHERE account_id = OLD.from_account_id;
-        ELSE -- Expense
-            UPDATE account 
-            SET total_amount = total_amount + ABS(OLD.transaction_amount)
-            WHERE account_id = OLD.from_account_id;
-        END IF;
     END IF;
-    
-    -- Apply new transaction
+
+    -- Then apply new transaction using NEW values and NEW date's rate
     IF NEW.to_account_id IS NOT NULL THEN
-        -- Apply new transfer
         SELECT currency_id INTO from_currency
         FROM account WHERE account_id = NEW.from_account_id;
         SELECT currency_id INTO to_currency
         FROM account WHERE account_id = NEW.to_account_id;
         
-        SET conv_rate = get_conversion_rate(NEW.user_id, from_currency, to_currency, NEW.transaction_date);
+        -- Use NEW transaction date for rate
+        SET conv_rate = get_historical_conversion_rate(NEW.user_id, from_currency, to_currency, NEW.transaction_date);
         
         UPDATE account 
         SET total_amount = total_amount - ABS(NEW.transaction_amount)
@@ -143,8 +168,20 @@ BEGIN
             SET total_amount = total_amount + (ABS(NEW.transaction_amount) * conv_rate)
             WHERE account_id = NEW.to_account_id;
         END IF;
-    ELSE
-        -- Apply new income/expense
+    END IF;
+
+    -- Handle Income/Expense the same way as before
+    IF NEW.transaction_type_id IN (1, 2) THEN
+        IF OLD.transaction_type_id = 1 THEN -- Income
+            UPDATE account 
+            SET total_amount = total_amount - ABS(OLD.transaction_amount)
+            WHERE account_id = OLD.from_account_id;
+        ELSE -- Expense
+            UPDATE account 
+            SET total_amount = total_amount + ABS(OLD.transaction_amount)
+            WHERE account_id = OLD.from_account_id;
+        END IF;
+
         IF NEW.transaction_type_id = 1 THEN -- Income
             UPDATE account 
             SET total_amount = total_amount + ABS(NEW.transaction_amount)
@@ -166,13 +203,14 @@ BEGIN
     DECLARE conv_rate DECIMAL(15,6);
     
     IF OLD.to_account_id IS NOT NULL THEN
-        -- Reverse transfer
+        -- Get currencies
         SELECT currency_id INTO from_currency
         FROM account WHERE account_id = OLD.from_account_id;
         SELECT currency_id INTO to_currency
         FROM account WHERE account_id = OLD.to_account_id;
         
-        SET conv_rate = get_conversion_rate(OLD.user_id, from_currency, to_currency, OLD.transaction_date);
+        -- Use historical rate from transaction date
+        SET conv_rate = get_historical_conversion_rate(OLD.user_id, from_currency, to_currency, OLD.transaction_date);
         
         UPDATE account 
         SET total_amount = total_amount + ABS(OLD.transaction_amount)
@@ -188,7 +226,7 @@ BEGIN
             WHERE account_id = OLD.to_account_id;
         END IF;
     ELSE
-        -- Reverse income/expense
+        -- Income/Expense case
         IF OLD.transaction_type_id = 1 THEN -- Income
             UPDATE account 
             SET total_amount = total_amount - ABS(OLD.transaction_amount)
