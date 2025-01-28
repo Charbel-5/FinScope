@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import './Settings.css';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { AlertModal } from '../components/AlertModal';
 
 function Settings() {
   const { user } = useAuth();
@@ -15,6 +16,11 @@ function Settings() {
     username: ''
   });
   const [initialData, setInitialData] = useState({});
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertType, setAlertType] = useState('info');
+  const [showCurrencyConfirm, setShowCurrencyConfirm] = useState(false);
+  const [pendingCurrencyChange, setPendingCurrencyChange] = useState(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -66,40 +72,72 @@ function Settings() {
     const { name, value } = e.target;
     const currencyName = value.split(' (')[0];
     
-    const confirmed = window.confirm(
-      'Changing currencies will erase all your data. Do you want to continue?'
-    );
+    setShowCurrencyConfirm(true);
+    setPendingCurrencyChange({
+      field: name === 'mainCurrency' ? 'mainCurrencyName' : 'secondaryCurrencyName',
+      value: currencyName
+    });
+  };
+
+  const validatePassword = (password) => {
+    if (password === '********') return true; // Skip validation if password unchanged
     
-    if (confirmed) {
-      setFormData(prev => ({
-        ...prev,
-        [name === 'mainCurrency' ? 'mainCurrencyName' : 'secondaryCurrencyName']: currencyName
-      }));
+    const errors = [];
+    
+    if (password.length < 8) {
+      errors.push('Password must be at least 8 characters long');
     }
+    if (!/[A-Z]/.test(password)) {
+      errors.push('Include at least one uppercase letter');
+    } 
+    if (!/[0-9]/.test(password)) {
+      errors.push('Include at least one number');
+    }
+  
+    return errors;
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
     
-    const currencyChanged = formData.mainCurrencyName !== initialData.mainCurrencyName || 
-                           formData.secondaryCurrencyName !== initialData.secondaryCurrencyName;
-    
-    const credentialsChanged = formData.email !== initialData.email ||
-                              formData.password !== '********' ||
-                              formData.username !== initialData.username;
-
     try {
-      if (currencyChanged) {
-        const confirmed = window.confirm(
-          'Changing currencies will erase all your transactions, accounts, and other data. Are you sure?'
-        );
-        if (!confirmed) return;
+      const currenciesChanged = 
+        formData.mainCurrencyName !== initialData.mainCurrencyName || 
+        formData.secondaryCurrencyName !== initialData.secondaryCurrencyName;
 
+      // Show second confirmation if currencies changed
+      if (currenciesChanged) {
+        setShowCurrencyConfirm(true);
+        setPendingCurrencyChange({ type: 'save' });
+        return;
+      }
+
+      // If no currency changes, proceed with normal save
+      await saveChanges();
+
+    } catch (err) {
+      setAlertMessage(`Error saving settings: ${err.response?.data?.error || err.message}`);
+      setAlertType('error');
+      setShowAlert(true);
+    }
+  };
+
+  const saveChanges = async () => {
+    try {
+      const currenciesChanged = 
+        formData.mainCurrencyName !== initialData.mainCurrencyName || 
+        formData.secondaryCurrencyName !== initialData.secondaryCurrencyName;
+
+      if (currenciesChanged) {
         await axios.put(`/api/complex/userCurrencies/${user.userId}`, {
           primary_currency_name: formData.mainCurrencyName,
           secondary_currency_name: formData.secondaryCurrencyName
         });
       }
+
+      const credentialsChanged = formData.email !== initialData.email ||
+                                formData.password !== '********' ||
+                                formData.username !== initialData.username;
 
       if (credentialsChanged) {
         const credentials = {};
@@ -126,91 +164,144 @@ function Settings() {
       });
       setFormData(prev => ({ ...prev, password: '********' }));
 
-      alert('Settings saved successfully!');
+      setAlertMessage('Settings saved successfully!');
+      setAlertType('success');
+      setShowAlert(true);
     } catch (err) {
-      console.error('Error saving settings:', err);
-      alert(`Error saving settings: ${err.response?.data?.error || err.message}`);
+      setAlertMessage(`Error saving settings: ${err.response?.data?.error || err.message}`);
+      setAlertType('error'); 
+      setShowAlert(true);
     }
   };
 
+  const handleCurrencyConfirm = (confirmed) => {
+    setShowCurrencyConfirm(false);
+    
+    if (confirmed) {
+      // Only update form state, no database changes yet
+      setFormData(prev => ({
+        ...prev,
+        [pendingCurrencyChange.field]: pendingCurrencyChange.value
+      }));
+    }
+    setPendingCurrencyChange(null);
+  };
+
+  const handleSaveConfirm = async (confirmed) => {
+    setShowCurrencyConfirm(false);
+    
+    if (confirmed) {
+      await saveChanges();
+    }
+    setPendingCurrencyChange(null);
+  };
+
   return (
-    <div className="settings-container">
-      <h2>Settings</h2>
-      <form onSubmit={handleSave}>
-        <div className="settings-group">
-          <label>Main Currency</label>
-          <select 
-            name="mainCurrency" 
-            value={formData.mainCurrencyName} 
-            onChange={handleCurrencyChange}
-          >
-            {allCurrencies.map((c, i) => (
-              <option key={i} value={c.name}>
-                {c.name} ({c.symbol})
-              </option>
-            ))}
-          </select>
-        </div>
+    <>
+      <div className="settings-container">
+        <h2>Settings</h2>
+        <form onSubmit={handleSave}>
+          <div className="settings-group">
+            <label>Main Currency</label>
+            <select 
+              name="mainCurrency" 
+              value={formData.mainCurrencyName} 
+              onChange={handleCurrencyChange}
+            >
+              {allCurrencies.map((c, i) => (
+                <option key={i} value={c.name}>
+                  {c.name} ({c.symbol})
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div className="settings-group">
-          <label>Secondary Currency</label>
-          <select 
-            name="secondaryCurrency" 
-            value={formData.secondaryCurrencyName}
-            onChange={handleCurrencyChange}
-          >
-            {allCurrencies.map((c, i) => (
-              <option key={i} value={c.name}>
-                {c.name} ({c.symbol})
-              </option>
-            ))}
-          </select>
-        </div>
+          <div className="settings-group">
+            <label>Secondary Currency</label>
+            <select 
+              name="secondaryCurrency" 
+              value={formData.secondaryCurrencyName}
+              onChange={handleCurrencyChange}
+            >
+              {allCurrencies.map((c, i) => (
+                <option key={i} value={c.name}>
+                  {c.name} ({c.symbol})
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div className="settings-group">
-          <label>Conversion Rate</label>
-          <input
-            type="number"
-            step="0.000001"
-            name="conversionRate"
-            value={formData.conversionRate}
-            onChange={handleFieldChange}
-          />
-        </div>
+          <div className="settings-group">
+            <label>Conversion Rate</label>
+            <input
+              type="number"
+              step="0.000001"
+              name="conversionRate"
+              value={formData.conversionRate}
+              onChange={handleFieldChange}
+            />
+          </div>
 
-        <div className="settings-group">
-          <label>Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleFieldChange}
-          />
-        </div>
+          <div className="settings-group">
+            <label>Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleFieldChange}
+            />
+          </div>
 
-        <div className="settings-group">
-          <label>Password</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleFieldChange}
-            placeholder="Leave blank to keep current password"
-          />
-        </div>
+          <div className="settings-group">
+            <label>Password</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleFieldChange}
+              placeholder="Leave blank to keep current password"
+            />
+          </div>
 
-        <div className="settings-group">
-          <label>Username</label>
-          <input
-            name="username"
-            value={formData.username}
-            onChange={handleFieldChange}
-          />
-        </div>
+          <div className="settings-group">
+            <label>Username</label>
+            <input
+              name="username"
+              value={formData.username}
+              onChange={handleFieldChange}
+            />
+          </div>
 
-        <button type="submit">Save</button>
-      </form>
-    </div>
+          <button type="submit">Save</button>
+        </form>
+      </div>
+      
+      {showAlert && (
+        <AlertModal
+          message={alertMessage}
+          type={alertType}
+          onClose={() => setShowAlert(false)}
+        />
+      )}
+
+      {showCurrencyConfirm && (
+        <AlertModal
+          message={
+            pendingCurrencyChange?.type === 'save' 
+              ? "Changing currencies will erase all your transactions, accounts, and other data. Are you sure you want to continue?"
+              : "Changing currency will require saving all settings. You will be asked to confirm data deletion when saving."
+          }
+          type="warning"
+          onClose={() => pendingCurrencyChange?.type === 'save' 
+            ? handleSaveConfirm(false)
+            : handleCurrencyConfirm(false)}
+          onConfirm={() => pendingCurrencyChange?.type === 'save'
+            ? handleSaveConfirm(true) 
+            : handleCurrencyConfirm(true)}
+          showConfirmButton={true}
+        />
+      )}
+    </>
   );
 }
 

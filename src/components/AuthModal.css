@@ -28,3 +28,29 @@
     font-size: 1.5rem;
     cursor: pointer;
   }
+
+  .alert-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+  }
+  
+  .alert-button.confirm {
+    background-color: var(--error);
+  }
+  
+  .alert-button.confirm:hover {
+    background-color: var(--error-dark);
+  }
+  
+  .alert-button.cancel {
+    background-color: var(--neutral-400);
+  }
+  
+  .alert-button.cancel:hover {
+    background-color: var(--neutral-500);
+  }
+  
+  .alert-message.warning {
+    color: var(--warning);
+  }

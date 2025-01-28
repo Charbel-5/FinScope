@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import './Settings.css'; // Reuse settings styles
 
-function Signup() {
+function Signup({ onSuccess }) {
   const { signup } = useAuth();
   const [allCurrencies, setAllCurrencies] = useState([]);
   const [formData, setFormData] = useState({
@@ -114,7 +114,9 @@ function Signup() {
       });
 
       if (response.status === 201) {
-        alert('Signup successful! You can now log in.');
+        // Close signup modal and open login modal
+        onSuccess();
+        // You'll need to pass a function to open login modal from LandingPage
       }
     } catch (err) {
       console.error('Signup error:', err);

@@ -13,6 +13,11 @@ function LandingPage() {
     setIsMobileMenuVisible(!isMobileMenuVisible);
   };
 
+  const handleSignupSuccess = () => {
+    setShowSignup(false);
+    setShowLogin(true);
+  };
+
   React.useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth > 768) {
@@ -247,7 +252,7 @@ function LandingPage() {
       )}
       {showSignup && (
         <AuthModal onClose={() => setShowSignup(false)}>
-          <Signup onSuccess={() => setShowSignup(false)} />
+          <Signup onSuccess={handleSignupSuccess} />
         </AuthModal>
       )}
 
