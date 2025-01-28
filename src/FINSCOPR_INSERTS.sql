@@ -370,35 +370,44 @@ VALUES
 
     -- Income categories (transaction_type_id = 1)
 
-    ('Allowance', 1),
+    ('Allowance 💰', 1),
 
-    ('Salary', 1),
+    ('Salary 💵', 1),
 
-    ('Petty cash', 1),
+    ('Petty cash 💸', 1),
 
-    ('Bonus', 1),
+    ('Bonus 🎉', 1),
 
-    ('Other', 1),
- 
+    ('Investment Returns 📈', 1),
+
+    ('Other 💎', 1),
+
+
     -- Expense categories (transaction_type_id = 2)
 
-    ('Transport',  2),
+    ('Transport 🚌',  2),
 
-    ('Food',   2),
+    ('Food 🍔',   2),
 
-    ('Groceries',  2),
+    ('Groceries 🛒',  2),
 
-    ('Health', 2),
+    ('Health ⚕️', 2),
 
-    ('Education',  2),
+    ('Education 📚',  2),
 
-    ('Apparel', 2),
+    ('Apparel 👚', 2),
 
-    ('Household',  2),
+    ('Household 🏠',  2),
 
-    ('Gift',   2),
+    ('Gift 🎁',   2),
 
-    ('Other', 2);
+    ('Entertainment 🎬', 2),
+
+    ('Insurance 🛡️', 2),
+
+    ('Pets 🐾', 2),
+
+    ('Other ❓', 2);
 
 
 
