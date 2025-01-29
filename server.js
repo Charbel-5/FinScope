@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const pool = require('./src/db');
 const path = require('path'); // ensure we have "path" imported
+const ExcelJS = require('exceljs'); // Install if not present: npm install exceljs
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -1237,6 +1238,123 @@ app.get('/api/protected', (req, res) => {
     res.json({ message: 'Access granted', userId: decoded.userId });
   } catch (err) {
     res.status(403).send('Invalid or expired token');
+  }
+});
+
+// Optional: Export user data to Excel
+app.get('/api/exportUserData/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    // Create workbook
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('UserData');
+
+    // Fetch user data with currency information
+    const [userRows] = await pool.query(`
+      SELECT 
+        u.email,
+        u.user_name,
+        c1.currency_name as primary_currency,
+        c2.currency_name as secondary_currency
+      FROM users u
+      LEFT JOIN currency c1 ON u.primary_currency_id = c1.currency_id
+      LEFT JOIN currency c2 ON u.secondary_currency_id = c2.currency_id
+      WHERE u.user_id = ?
+    `, [userId]);
+
+    // Fetch accounts with full details
+    const [accounts] = await pool.query(`
+      SELECT 
+        a.name,
+        a.total_amount,
+        at.account_type_description,
+        c.currency_name
+      FROM account a
+      JOIN account_type at ON a.account_type_id = at.account_type_id
+      JOIN currency c ON a.currency_id = c.currency_id
+      WHERE a.user_id = ?
+    `, [userId]);
+
+    // Fetch transactions with full details
+    const [transactions] = await pool.query(`
+      SELECT 
+        DATE_FORMAT(t.transaction_date, '%Y-%m-%d') as transaction_date,
+        t.transaction_amount,
+        t.transaction_name,
+        tt.transaction_type_description as type,
+        tc.transaction_category_de as category,
+        af.name as from_account,
+        at.name as to_account,
+        c.currency_name as currency
+      FROM transaction t
+      JOIN transaction_type tt ON t.transaction_type_id = tt.transaction_type_id
+      LEFT JOIN transaction_category tc ON t.transaction_category_id = tc.transaction_category_id
+      JOIN account af ON t.from_account_id = af.account_id
+      LEFT JOIN account at ON t.to_account_id = at.account_id
+      JOIN currency c ON af.currency_id = c.currency_id
+      WHERE t.user_id = ?
+      ORDER BY t.transaction_date DESC
+    `, [userId]);
+
+    // Add user information
+    sheet.addRow(['User Information']);
+    sheet.addRow(['Email', 'Username', 'Primary Currency', 'Secondary Currency']);
+    sheet.addRow([
+      userRows[0].email,
+      userRows[0].user_name,
+      userRows[0].primary_currency,
+      userRows[0].secondary_currency
+    ]);
+
+    // Add accounts section
+    sheet.addRow([]);
+    sheet.addRow(['Accounts']);
+    sheet.addRow(['Name', 'Balance', 'Type', 'Currency']);
+    accounts.forEach(acc => {
+      sheet.addRow([
+        acc.name,
+        acc.total_amount,
+        acc.account_type_description,
+        acc.currency_name
+      ]);
+    });
+
+    // Add transactions section
+    sheet.addRow([]);
+    sheet.addRow(['Transactions']);
+    sheet.addRow(['Date', 'Amount', 'Name', 'Type', 'Category', 'From Account', 'To Account', 'Currency']);
+    transactions.forEach(txn => {
+      sheet.addRow([
+        txn.transaction_date,
+        txn.transaction_amount,
+        txn.transaction_name,
+        txn.type,
+        txn.category,
+        txn.from_account,
+        txn.to_account || '-',
+        txn.currency
+      ]);
+    });
+
+    // Add some basic formatting
+    sheet.getColumn(1).width = 15;  // Date
+    sheet.getColumn(2).width = 12;  // Amount
+    sheet.getColumn(3).width = 20;  // Name
+    sheet.getColumn(4).width = 15;  // Type
+    sheet.getColumn(5).width = 15;  // Category
+    sheet.getColumn(6).width = 20;  // From Account
+    sheet.getColumn(7).width = 20;  // To Account
+    sheet.getColumn(8).width = 15;  // Currency
+
+    // Set headers and send file
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=user_data.xlsx');
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    console.error('Error exporting user data:', err);
+    res.status(500).json({ error: 'Failed to export data' });
   }
 });
 

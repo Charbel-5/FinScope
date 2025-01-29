@@ -9,6 +9,7 @@
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "cra-template": "1.2.0",
+    "exceljs": "^4.4.0",
     "express": "^4.21.2",
     "finscope": "file:",
     "jsonwebtoken": "^9.0.2",

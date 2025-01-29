@@ -64,6 +64,27 @@ function Settings() {
     fetchData();
   }, [user?.userId]);
 
+
+  const handleExport = async () => {
+    try {
+      const response = await axios.get(`/api/exportUserData/${user.userId}`, {
+        responseType: 'blob'  // Important for handling file downloads
+      });
+
+      // Create blob link to download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'user_data.xlsx'); 
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export failed:', err);
+    }
+  };
+
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -311,6 +332,8 @@ function Settings() {
               onChange={handleFieldChange}
             />
           </div>
+
+           <button type="button" onClick={handleExport}>Export Data</button>
 
           <button type="submit">Save</button>
         </form>

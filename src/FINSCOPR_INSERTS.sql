@@ -322,13 +322,16 @@ INSERT INTO account_type (account_type_description)
 
 VALUES
 
-    ('Cash'),
-
-    ('Card'),
-
-    ('Savings'),
-
-    ('Loan');
+    ('💵 Cash'),
+    ('💳 Card'),
+    ('🏦 Savings'),
+    ('🏷️ Loan'),
+    ('📈 Investment'),
+    ('💰 Fixed Deposit'),
+    ('🏢 Real Estate'),
+    ('💸 Digital Wallet'),
+    ('🪙 Cryptocurrency'),
+    ('📝 Other');
  
 -- 2) Insert into TRANSACTION_TYPE
 
