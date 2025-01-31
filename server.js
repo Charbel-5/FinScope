@@ -675,6 +675,8 @@ app.get('/api/users/:userId/currencies', async (req, res) => {
 
 
 
+
+
 // ========================================
 // COMPLEX TRANSACTIONS ENDPOINTS
 // ========================================
@@ -710,7 +712,9 @@ app.get('/api/complex/transactions/:userId', async (req, res) => {
   }
 });
 
-//Editing the transaction using its id, and texts VALID
+// =============================
+// Update transaction endpoint
+// =============================
 app.put('/api/complex/transaction/:transactionId', async (req, res) => {
   const { transactionId } = req.params;
   const {
@@ -718,54 +722,51 @@ app.put('/api/complex/transaction/:transactionId', async (req, res) => {
     transaction_amount,
     transaction_name,
     transaction_type,      // e.g. "Expense"
-    transaction_category,  // e.g. "Bonus"
-    from_account,          // e.g. "Bob Savings"
-    to_account             // e.g. null or "Alice Checking"
+    transaction_category,  // e.g. "Bonus" or null for transfers
+    from_account,         // e.g. "Bob Savings"
+    to_account           // e.g. null or "Alice Checking"
   } = req.body;
 
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
 
-    // 1) Find the foreign keys based on text values for transaction_type and transaction_category
+    // 1) Find the foreign keys based on text values for transaction_type
     const [[transactionTypeRow]] = await conn.query(
       'SELECT transaction_type_id FROM transaction_type WHERE transaction_type_description = ?',
       [transaction_type]
     );
 
     if (!transactionTypeRow) {
-      throw new Error('Transaction type not found.');
+      throw new Error('Transaction type not found');
     }
     const transaction_type_id = transactionTypeRow.transaction_type_id;
 
-    const [[transactionCategoryRow]] = await conn.query(
-      'SELECT transaction_category_id FROM transaction_category WHERE transaction_category_de = ?',
-      [transaction_category]
-    );
-
+    // 2) Handle transaction category (null for transfers)
     let transaction_category_id = null;
-    if (transactionCategoryRow) {
-      transaction_category_id = transactionCategoryRow.transaction_category_id;
-    } else {
-      // If the category doesn't exist, create a new one
-      const [newCategoryResult] = await conn.query(
-        'INSERT INTO transaction_category (transaction_category_de, user_id, transaction_type_id) VALUES (?, ?, ?)',
-        [transaction_category, existingTx.user_id, transaction_type_id]
+    if (transaction_type !== 'Transfer' && transaction_category) {
+      const [[categoryRow]] = await conn.query(
+        'SELECT transaction_category_id FROM transaction_category WHERE transaction_category_de = ?',
+        [transaction_category]
       );
-      transaction_category_id = newCategoryResult.insertId;
+
+      if (categoryRow) {
+        transaction_category_id = categoryRow.transaction_category_id;
+      }
     }
 
-    // 2) Find the foreign keys for from_account and to_account based on account name
+    // 3) Find from_account_id
     const [[fromAccountRow]] = await conn.query(
       'SELECT account_id FROM account WHERE name = ?',
       [from_account]
     );
 
     if (!fromAccountRow) {
-      throw new Error('From account not found.');
+      throw new Error('From account not found');
     }
     const from_account_id = fromAccountRow.account_id;
 
+    // 4) Find to_account_id (if transfer)
     let to_account_id = null;
     if (to_account) {
       const [[toAccountRow]] = await conn.query(
@@ -774,18 +775,18 @@ app.put('/api/complex/transaction/:transactionId', async (req, res) => {
       );
 
       if (!toAccountRow) {
-        throw new Error('To account not found.');
+        throw new Error('To account not found');
       }
       to_account_id = toAccountRow.account_id;
     }
 
-    // 3) Update the transaction with the new foreign keys and other fields
+    // 5) Update the transaction
     await conn.query(`
       UPDATE transaction
       SET
-        transaction_date   = ?,
+        transaction_date = ?,
         transaction_amount = ?,
-        transaction_name   = ?,
+        transaction_name = ?,
         transaction_type_id = ?,
         transaction_category_id = ?,
         from_account_id = ?,
@@ -806,14 +807,13 @@ app.put('/api/complex/transaction/:transactionId', async (req, res) => {
     res.sendStatus(200);
 
   } catch (err) {
-    console.error(err);
+    console.error('Error updating transaction:', err);
     await conn.rollback();
-    res.status(500).send('Error editing complex transaction');
+    res.status(500).send(err.message || 'Error updating transaction');
   } finally {
     conn.release();
   }
 });
-
 
 // 3) Delete a transaction by its ID Valid
 app.delete('/api/complex/transaction/:transactionId', async (req, res) => {
@@ -1055,7 +1055,7 @@ app.put('/api/complex/userCurrencies/:userId', async (req, res) => {
   }
 });
 
-// 4) Delete everything related to the user except the user’s attributes
+// 4) Delete everything related to the user except the user's attributes
 app.delete('/api/complex/clearUser/:userId', async (req, res) => {
   const { userId } = req.params;
   const conn = await pool.getConnection();
@@ -1355,67 +1355,5 @@ app.get('/api/exportUserData/:userId', async (req, res) => {
   } catch (err) {
     console.error('Error exporting user data:', err);
     res.status(500).json({ error: 'Failed to export data' });
-  }
-});
-
-// Update the complex transaction edit endpoint
-app.put('/api/complex/transaction/:transactionId', async (req, res) => {
-  const { transactionId } = req.params;
-  const {
-    transaction_date,
-    transaction_amount,
-    transaction_name,
-    transaction_type,
-    transaction_category,
-    from_account,
-    to_account
-  } = req.body;
-
-  const conn = await pool.getConnection();
-  try {
-    await conn.beginTransaction();
-
-    // Get existing transaction first
-    const [[existingTx]] = await conn.query(
-      'SELECT * FROM transaction WHERE transaction_id = ?',
-      [transactionId]
-    );
-
-    if (!existingTx) {
-      throw new Error('Transaction not found');
-    }
-
-    // Rest of the code remains the same...
-    // Update the transaction with the new values
-    await conn.query(`
-      UPDATE transaction
-      SET
-        transaction_date = CURRENT_DATE(), // Force current date to use latest conversion rate
-        transaction_amount = ?,
-        transaction_name = ?,
-        transaction_type_id = ?,
-        transaction_category_id = ?,
-        from_account_id = ?,
-        to_account_id = ?
-      WHERE transaction_id = ?
-    `, [
-      transaction_amount,
-      transaction_name, 
-      transaction_type_id,
-      transaction_category_id,
-      from_account_id,
-      to_account_id,
-      transactionId
-    ]);
-
-    await conn.commit();
-    res.sendStatus(200);
-
-  } catch (err) {
-    await conn.rollback();
-    console.error(err);
-    res.status(500).send('Error editing transaction');
-  } finally {
-    conn.release();
   }
 });
