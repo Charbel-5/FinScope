@@ -1,4 +1,3 @@
--- Start a transaction (optional but recommended)
 
 START TRANSACTION;
  
@@ -314,7 +313,6 @@ VALUES
 
     ('Zimbabwean Dollar', 'ZWL');
  
--- Commit the entire batch of inserts
 
 -- 3) Insert into USERS
 
@@ -349,9 +347,6 @@ VALUES
  
 -- 4) Insert into TRANSACTION_CATEGORY
 
---    Use a subquery to find the user_id for 'system@dummy.com'
-
---    and hardcode the transaction_type_id values:
 
 INSERT INTO users (email, password, user_name, primary_currency_id, secondary_currency_id)
 

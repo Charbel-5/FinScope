@@ -1,5 +1,7 @@
 import { restClient } from '@polygon.io/client-js';
-const rest = restClient("DnGGuI3gDXto9JPBvAVKuu8tHr15fWqG");
+import config from '../Config';
+
+const rest = restClient(config.polygonApiKey);
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -16,8 +18,6 @@ function getPreviousBusinessDay() {
   } else {
     date.setDate(date.getDate() - 1);
   }
-
-  date.setDate(date.getDate() - 2);
 
   return date.toISOString().split('T')[0];
   

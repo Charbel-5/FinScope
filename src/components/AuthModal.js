@@ -5,7 +5,7 @@ export function AuthModal({ children, onClose }) {
   return (
     <div className="auth-modal-backdrop" onClick={onClose}>
       <div className="auth-modal-content" onClick={e => e.stopPropagation()}>
-        <button className="auth-modal-close" onClick={onClose}>×</button>
+        <button className="auth-modal-close" onClick={onClose}>x</button>
         {children}
       </div>
     </div>

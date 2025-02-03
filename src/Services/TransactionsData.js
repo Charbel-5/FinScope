@@ -109,8 +109,8 @@ export function useTransactions() {
   const sortedTransactions = sortTransactionsByDateDescending(transactions);
   const transactionsGrouped = groupTransactionsByMonthFromCurrent(sortedTransactions);
 
-  console.log('Sorted transactions:', sortedTransactions); // Debugging log
-  console.log('Grouped transactions:', transactionsGrouped); // Debugging log
+  console.log('Sorted transactions:', sortedTransactions);
+  console.log('Grouped transactions:', transactionsGrouped);
 
   // Available months for MonthlySwitcher
   const availableMonths = transactionsGrouped.map((g) => {
@@ -137,7 +137,7 @@ export function useTransactions() {
         }
       });
     } catch (err) {
-      console.error('Error saving transaction:', err); // Debugging log
+      console.error('Error saving transaction:', err);
       setError(err);
     }
   };
@@ -148,7 +148,7 @@ export function useTransactions() {
       await axios.delete(`/api/transactions/${id}`);
       setTransactions((prev) => prev.filter((txn) => txn.id !== id));
     } catch (err) {
-      console.error('Error deleting transaction:', err); // Debugging log
+      console.error('Error deleting transaction:', err);
       setError(err);
     }
   };

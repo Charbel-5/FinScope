@@ -68,8 +68,6 @@ CREATE TABLE `users` (
 
     `user_name`   VARCHAR(100) NOT NULL,
  
-    -- Add two columns referencing "primary" and "secondary" currencies
-
     `primary_currency_id`   INT NULL,
 
     `secondary_currency_id` INT NULL,
@@ -166,7 +164,7 @@ CREATE TABLE `account` (
 
     `account_id`   INT NOT NULL AUTO_INCREMENT,
 
-    `name`         VARCHAR(200) NOT NULL,  -- matches diagram label "Name"
+    `name`         VARCHAR(200) NOT NULL,
 
     `total_amount` DECIMAL(15,2) NOT NULL,
  
@@ -174,8 +172,6 @@ CREATE TABLE `account` (
 
     `user_id`         INT NOT NULL,
  
-    -- References currency directly (rather than a separate "currency_setting" table)
-
     `currency_id` INT NOT NULL,
 
     PRIMARY KEY (`account_id`),
@@ -228,9 +224,6 @@ CREATE TABLE `user_stocks` (
 
 ) ENGINE=InnoDB;
  
--- Note: "transaction" is a reserved word, so we use backticks.
-
--- We remove the currency_id column entirely here.
  
 CREATE TABLE `transaction` (
 

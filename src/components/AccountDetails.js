@@ -16,7 +16,7 @@ function getAccountTransactions(transactions, accountName) {
   });
 }
 
-function AccountDetails({ accountName, onClose }) {
+function AccountDetails({ accountName, onClose, onTransactionChange }) {
   const { transactions, handleSave, handleDelete } = useTransactions();
 
   const [showForm, setShowForm] = useState(false);
@@ -28,6 +28,16 @@ function AccountDetails({ accountName, onClose }) {
   const handleEdit = (txn) => {
     setEditData(txn);
     setShowForm(true);
+  };
+
+  const handleTransactionSave = async (transactionData) => {
+    await handleSave(transactionData);
+    onTransactionChange(); // Trigger refresh of accounts
+  };
+
+  const handleTransactionDelete = async (id) => {
+    await handleDelete(id);
+    onTransactionChange(); // Trigger refresh of accounts
   };
 
   // Filter out the transactions for this specific account
@@ -52,7 +62,7 @@ function AccountDetails({ accountName, onClose }) {
                 type={txn.transaction_type}
                 currency={txn.currency_symbol}
                 onEdit={() => handleEdit(txn)}
-                onDelete={() => handleDelete(txn.transaction_id)}
+                onDelete={() => handleTransactionDelete(txn.transaction_id)}
               />
             </TransactionBox>
           ))}
@@ -65,7 +75,7 @@ function AccountDetails({ accountName, onClose }) {
             setShowForm(false);
             setEditData(null);
           }}
-          onSave={handleSave}
+          onSave={handleTransactionSave}
           initialTransaction={editData}
         />
       )}

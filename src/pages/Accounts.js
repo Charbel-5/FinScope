@@ -11,7 +11,7 @@ import { AlertModal } from '../components/AlertModal';
 
 function Accounts() {
   const { user } = useAuth();
-  const { groupedAccounts, assets, liabilities, total, loading, error, primaryCurrencySymbol } = useAccounts(user?.userId);
+  const { groupedAccounts, assets, liabilities, total, loading, error, primaryCurrencySymbol, refreshAccounts } = useAccounts(user?.userId);
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editAcc, setEditAcc] = useState(null);
@@ -241,6 +241,7 @@ function Accounts() {
         <AccountDetails
           accountName={selectedAccount}
           onClose={() => setSelectedAccount(null)}
+          onTransactionChange={refreshAccounts}
         />
       )}
 

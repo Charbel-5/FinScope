@@ -68,26 +68,28 @@ export function useAccounts(userId) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        // Fetch accounts
-        const accountsRes = await axios.get(`${config.apiBaseUrl}/api/accounts/${userId}`);
-        setAccounts(accountsRes.data);
+  async function fetchData() {
+    try {
+      const accountsRes = await axios.get(`${config.apiBaseUrl}/api/accounts/${userId}`);
+      setAccounts(accountsRes.data);
 
-        // Fetch user's currency info and latest rate
-        const userAttrsRes = await axios.get(`${config.apiBaseUrl}/api/complex/userAttributes/${userId}`);
-        const userAttrs = userAttrsRes.data;
-        setPrimaryCurrencySymbol(userAttrs.primary_currency_symbol);
-        setConversionRate(userAttrs.latest_rate || 1);
-        
-        setLoading(false);
-      } catch (err) {
-        setError(err);
-        setLoading(false);
-      }
+      const userAttrsRes = await axios.get(`${config.apiBaseUrl}/api/complex/userAttributes/${userId}`);
+      const userAttrs = userAttrsRes.data;
+      setPrimaryCurrencySymbol(userAttrs.primary_currency_symbol);
+      setConversionRate(userAttrs.latest_rate || 1);
+      
+      setLoading(false);
+    } catch (err) {
+      setError(err);
+      setLoading(false);
     }
+  }
 
+  const refreshAccounts = () => {
+    fetchData();
+  };
+
+  useEffect(() => {
     fetchData();
   }, [userId]);
 
@@ -103,6 +105,7 @@ export function useAccounts(userId) {
     total, 
     loading, 
     error, 
-    primaryCurrencySymbol 
+    primaryCurrencySymbol,
+    refreshAccounts
   };
 }
