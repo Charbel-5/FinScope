@@ -77,13 +77,13 @@ function StocksProvider({ children }) {
     try {
       await axios.post('/api/user_stocks', {
         stock_ticker: ticker.toUpperCase(),
-        stock_amount: parseFloat(quantity),
+        stock_amount: Number(parseFloat(quantity).toFixed(5)),
         user_id: user.userId
       });
       
       setStockHoldings(prev => [...prev, { 
         ticker: ticker.toUpperCase(), 
-        quantity: parseFloat(quantity) 
+        quantity: Number(parseFloat(quantity).toFixed(5))
       }]);
     } catch (err) {
       console.error('Failed to add stock:', err);
@@ -101,14 +101,17 @@ function StocksProvider({ children }) {
 
       await axios.put(`/api/user_stocks/${stock.stock_id}`, {
         stock_ticker: newTicker.toUpperCase(),
-        stock_amount: parseFloat(newQuantity),
+        stock_amount: Number(parseFloat(newQuantity).toFixed(5)),
         user_id: user.userId
       });
 
       setStockHoldings(prev => 
         prev.map(s => 
           s.ticker === oldTicker 
-            ? { ticker: newTicker.toUpperCase(), quantity: parseFloat(newQuantity) } 
+            ? { 
+                ticker: newTicker.toUpperCase(), 
+                quantity: Number(parseFloat(newQuantity).toFixed(5)) 
+              } 
             : s
         )
       );

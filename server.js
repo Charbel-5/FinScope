@@ -1083,10 +1083,6 @@ app.delete('/api/complex/clearUser/:userId', async (req, res) => {
 })
 
 
-
-
-
-// New endpoint: Register
 app.post('/api/register', async (req, res) => {
   const { email, password, user_name, primary_currency_name, secondary_currency_name, conversion_rate } = req.body;
   const conn = await pool.getConnection();

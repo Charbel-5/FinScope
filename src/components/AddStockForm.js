@@ -5,35 +5,60 @@ import './AddStockForm.css';
 function AddStockForm({ onClose, initialTicker, initialQuantity, onEditStock }) {
   const { addStock, stockHoldings } = useStocks();
   const [ticker, setTicker] = useState(initialTicker || '');
-  const [quantity, setQuantity] = useState(initialQuantity || '');
+  const [quantity, setQuantity] = useState(initialQuantity ? Number(initialQuantity).toFixed(5) : '');
   const [message, setMessage] = useState('');
+
+  const handleQuantityChange = (e) => {
+    const value = e.target.value.replace(/[^\d.]|\.(?=.*\.)/g, '');
+    setQuantity(value);
+  };
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!ticker || !quantity) return;
-    
+    if (!ticker || !quantity) {
+      setMessage('Please enter both ticker and quantity');
+      return;
+    }
+
+    const formattedQuantity = Number(parseFloat(quantity).toFixed(5));
+    if (isNaN(formattedQuantity) || formattedQuantity <= 0) {
+      setMessage('Please enter a valid quantity');
+      return;
+    }
+
+    const formattedTicker = ticker.trim().toUpperCase();
+
     try {
       if (initialTicker) {
-        // Editing existing
-        await onEditStock(initialTicker, ticker.trim().toUpperCase(), quantity);
+        await onEditStock(initialTicker, formattedTicker, formattedQuantity);
       } else {
-        // Check if stock exists
-        const exists = stockHoldings.some(
-          s => s.ticker.toUpperCase() === ticker.trim().toUpperCase()
+        const existingStock = stockHoldings.find(
+          s => s.ticker.toUpperCase() === formattedTicker
         );
-        
-        // Adding new or updating existing
-        await addStock(ticker.trim().toUpperCase(), quantity);
-        
-        if (exists) {
+
+        if (existingStock) {
+          const existingQuantity = Number(parseFloat(existingStock.quantity).toFixed(5));
+          const newQuantity = Number((existingQuantity + formattedQuantity).toFixed(5));
+
+          if (isNaN(newQuantity)) {
+            throw new Error('Invalid quantity calculation');
+          }
+
+          await onEditStock(existingStock.ticker, existingStock.ticker, newQuantity);
           setMessage('Updated existing stock quantity');
           setTimeout(onClose, 1500);
           return;
         }
+
+        await addStock(formattedTicker, formattedQuantity);
       }
       onClose();
     } catch (err) {
-      setMessage('Error: ' + err.message);
+      console.error('Stock operation failed:', err);
+      setMessage(err.response?.status === 404 ? 
+        'Invalid stock ticker. Please check and try again.' : 
+        'Error: ' + (err.response?.data?.message || err.message)
+      );
     }
   }
 
@@ -49,17 +74,17 @@ function AddStockForm({ onClose, initialTicker, initialQuantity, onEditStock }) 
             onChange={(e) => setTicker(e.target.value)}
           />
           <input
+            type="text"
+            pattern="[0-9.]*"
+            inputMode="decimal"
             placeholder="Quantity"
             value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
+            onChange={handleQuantityChange}
           />
           <div>
             <button type="submit">{initialTicker ? 'Edit Stock' : 'Add Stock'}</button>
-          </div>
-          <div>
             <button type="button" onClick={onClose}>Cancel</button>
           </div>
-          
         </form>
       </div>
     </div>

@@ -4,6 +4,8 @@ import './StockList.css';
 function StockList({ data, onEdit, onDelete, loading, error }) {
   const [hoveredIndex, setHoveredIndex] = useState(null);
 
+  const formatNumber = (num) => Number(num).toFixed(5);
+
   if (loading) {
     return <div className="status-message">Loading stock prices...</div>;
   }
@@ -36,7 +38,7 @@ function StockList({ data, onEdit, onDelete, loading, error }) {
             </div>
             <div className="stock-detail">
               <span className="stock-label">Quantity</span>
-              <span className="stock-value">{holding.quantity}</span>
+              <span className="stock-value">{formatNumber(holding.quantity)}</span>
             </div>
             <div className="stock-detail">
               <span className="stock-label">Total Value</span>
