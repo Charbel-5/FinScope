@@ -27,7 +27,7 @@ function AddStockForm({ onClose, initialTicker, initialQuantity, onEditStock }) 
         
         if (exists) {
           setMessage('Updated existing stock quantity');
-          setTimeout(onClose, 1500); // Close after showing message
+          setTimeout(onClose, 1500);
           return;
         }
       }

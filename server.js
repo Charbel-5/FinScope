@@ -2,11 +2,15 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const pool = require('./src/db');
-const path = require('path'); // ensure we have "path" imported
-const ExcelJS = require('exceljs'); // Install if not present: npm install exceljs
+const path = require('path');
+const ExcelJS = require('exceljs');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const SECRET_KEY = 'CHANGE_THIS_SECRET';
+const PORT = 3000;
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -15,12 +19,10 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-// Serve index.html by default
 app.get('/', (req, res) => {
   res.sendFile(path.resolve(__dirname, 'public/index.html'));
 });
 
-// Serve a separate login page with no menu
 app.get('/login', (req, res) => {
   res.sendFile(path.resolve(__dirname, 'public/login.html'));
 });
@@ -721,10 +723,10 @@ app.put('/api/complex/transaction/:transactionId', async (req, res) => {
     transaction_date,
     transaction_amount,
     transaction_name,
-    transaction_type,      // e.g. "Expense"
-    transaction_category,  // e.g. "Bonus" or null for transfers
-    from_account,         // e.g. "Bob Savings"
-    to_account           // e.g. null or "Alice Checking"
+    transaction_type, 
+    transaction_category,
+    from_account,  
+    to_account     
   } = req.body;
 
   const conn = await pool.getConnection();
@@ -834,10 +836,10 @@ app.post('/api/complex/transaction', async (req, res) => {
     transaction_date,
     transaction_amount,
     transaction_name,
-    transaction_type,      // e.g. "Expense"
-    transaction_category,  // e.g. "Bonus"
-    from_account,          // e.g. "Bob Savings"
-    to_account             // e.g. null or "Alice Checking"
+    transaction_type,     
+    transaction_category, 
+    from_account,    
+    to_account          
   } = req.body;
 
   const conn = await pool.getConnection();
@@ -864,7 +866,6 @@ app.post('/api/complex/transaction', async (req, res) => {
     if (transactionCategoryRow) {
       transaction_category_id = transactionCategoryRow.transaction_category_id;
     } else {
-      // If the category doesn't exist, create a new one
     }
 
     // 2) Find the foreign keys for from_account and to_account based on account name
@@ -906,9 +907,9 @@ app.post('/api/complex/transaction', async (req, res) => {
     `;
     const formattedDate = new Date(transaction_date);
     await conn.query(insertSql, [
-      formattedDate, // Use the properly formatted date
-      transaction_amount || 0, // Default amount if missing
-      transaction_name || 'Default Transaction', // Default name if missing
+      formattedDate, 
+      transaction_amount || 0, 
+      transaction_name || 'Default Transaction',
       transaction_category_id,
       transaction_type_id,
       user_id,
@@ -1002,13 +1003,13 @@ app.get('/api/complex/userAttributes/:userId', async (req, res) => {
 // 2) Update user currencies, delete everything except user, new currencies, stocks
 app.put('/api/complex/userCurrencies/:userId', async (req, res) => {
   const { userId } = req.params;
-  const { primary_currency_name, secondary_currency_name, conversion_rate } = req.body; // Add conversion_rate
+  const { primary_currency_name, secondary_currency_name, conversion_rate } = req.body;
   const conn = await pool.getConnection();
   
   try {
     await conn.beginTransaction();
 
-    // Get currency IDs and update user currencies - existing code
+    // Get currency IDs and update user currencies
     const [[primaryCurrency]] = await conn.query(
       'SELECT currency_id FROM currency WHERE currency_name = ?',
       [primary_currency_name]
@@ -1089,13 +1090,6 @@ app.delete('/api/complex/clearUser/:userId', async (req, res) => {
 
 
 
-
-
-
-// Add these lines near the top
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const SECRET_KEY = process.env.JWT_SECRET || 'CHANGE_THIS_SECRET';
 
 
 // New endpoint: Register
@@ -1228,7 +1222,6 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Optional: Example route to verify token
 app.get('/api/protected', (req, res) => {
   const header = req.headers.authorization;
   if (!header) return res.status(401).send('Missing token');
@@ -1241,7 +1234,6 @@ app.get('/api/protected', (req, res) => {
   }
 });
 
-// Optional: Export user data to Excel
 app.get('/api/exportUserData/:userId', async (req, res) => {
   const { userId } = req.params;
   try {
@@ -1337,14 +1329,14 @@ app.get('/api/exportUserData/:userId', async (req, res) => {
     });
 
     // Add some basic formatting
-    sheet.getColumn(1).width = 15;  // Date
-    sheet.getColumn(2).width = 12;  // Amount
-    sheet.getColumn(3).width = 20;  // Name
-    sheet.getColumn(4).width = 15;  // Type
-    sheet.getColumn(5).width = 15;  // Category
-    sheet.getColumn(6).width = 20;  // From Account
-    sheet.getColumn(7).width = 20;  // To Account
-    sheet.getColumn(8).width = 15;  // Currency
+    sheet.getColumn(1).width = 15;  
+    sheet.getColumn(2).width = 12;
+    sheet.getColumn(3).width = 20;
+    sheet.getColumn(4).width = 15; 
+    sheet.getColumn(5).width = 15;
+    sheet.getColumn(6).width = 20;
+    sheet.getColumn(7).width = 20;
+    sheet.getColumn(8).width = 15;
 
     // Set headers and send file
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

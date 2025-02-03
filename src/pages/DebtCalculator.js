@@ -3,7 +3,6 @@ import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS } from 'chart.js/auto';
 import './DebtCalculator.css';
 
-// Add this default chart data at the start of the component
 const defaultChartData = {
   labels: Array.from({ length: 12 }, (_, i) => `Month ${i + 1}`),
   datasets: [{
@@ -11,7 +10,7 @@ const defaultChartData = {
     data: Array(12).fill(0),
     borderColor: 'rgba(75,192,192,1)',
     fill: false,
-    borderDash: [5, 5] // Add dashed line for empty state
+    borderDash: [5, 5]
   }]
 };
 

@@ -3,17 +3,14 @@ import { sortTransactionsByDateDescending, groupTransactionsByMonthFromCurrent }
 import axios from 'axios';
 import { useAuth } from './AuthContext';
 
-// Create a context
 const TransactionsContext = createContext(null);
 
-// Actual logic that used to be in useTransactions()
 function useTransactionsLogic() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { user, isAuthenticated } = useAuth();
 
-  // Add getCurrentMonthYear helper
   const getCurrentMonthYear = () => {
     const now = new Date();
     return now.toLocaleString('default', { month: 'long', year: 'numeric' });
@@ -34,7 +31,7 @@ function useTransactionsLogic() {
     }
 
     fetchTransactions();
-  }, [user?.userId, isAuthenticated]); // Add isAuthenticated to dependencies
+  }, [user?.userId, isAuthenticated]);
 
   const sortedTransactions = sortTransactionsByDateDescending(transactions);
   const transactionsGrouped = groupTransactionsByMonthFromCurrent(sortedTransactions);
@@ -84,7 +81,6 @@ function useTransactionsLogic() {
   };
 }
 
-// Provider that wraps children with the single instance of state
 export function TransactionsProvider({ children }) {
   const value = useTransactionsLogic();
   return (
@@ -94,7 +90,6 @@ export function TransactionsProvider({ children }) {
   );
 }
 
-// Hook to consume our context
 export function useTransactions() {
   return useContext(TransactionsContext);
 }

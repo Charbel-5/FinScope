@@ -4,7 +4,7 @@ const pool = mysql.createPool({
   host: 'localhost',
   user: 'finscope',
   password: 'finscope',
-  database: 'finscope', // match your .sql file
+  database: 'finscope',
   waitForConnections: true,
   connectionLimit: 10,
 });

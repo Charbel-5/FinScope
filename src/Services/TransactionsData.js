@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-// Set the base URL for axios
 axios.defaults.baseURL = 'http://localhost:3000';
 
 const userId = 2;
 
-// Sort transactions descending by date
 export function sortTransactionsByDateDescending(txns) {
   return [...txns].sort((a, b) => {
     const dateA = new Date(a.transaction_date);

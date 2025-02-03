@@ -11,13 +11,13 @@ function StocksProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const { user } = useAuth(); // Add this line
+  const { user } = useAuth();
 
   // Fetch holdings from database
   useEffect(() => {
     async function fetchHoldings() {
-      if (!user) return; // Add this check
-      setLoading(true); // Start loading
+      if (!user) return; 
+      setLoading(true);
       try {
         const response = await axios.get(`/api/user_stocks/${user.userId}`);
         setStockHoldings(response.data.map(holding => ({
@@ -27,13 +27,13 @@ function StocksProvider({ children }) {
         setError(null);
       } catch (err) {
         console.error('Failed to fetch stock holdings:', err);
-        setError('Add your first stock to track its performance'); // Changed error message
+        setError('Add your first stock to track its performance');
       } finally {
-        setLoading(false); // Stop loading regardless of result
+        setLoading(false);
       }
     }
     fetchHoldings();
-  }, [user]); // Update dependency
+  }, [user]);
 
   // Fetch prices whenever holdings change
   useEffect(() => {

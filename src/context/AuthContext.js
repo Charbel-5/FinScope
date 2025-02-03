@@ -30,7 +30,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
       setIsAuthenticated(true);
-      return true; // Login success flag
+      return true;
     } catch (error) {
       console.error('Login failed:', error);
       return false;
@@ -59,7 +59,6 @@ export function AuthProvider({ children }) {
       await axios.post('/api/currency_rates', {
         conversion_rate: conversionRate,
         start_date: new Date().toISOString().split('T')[0],
-        // Note: You'll need to handle getting the user_id after registration
         user_id: response.data.userId 
       });
 

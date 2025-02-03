@@ -17,14 +17,11 @@ function getAccountTransactions(transactions, accountName) {
 }
 
 function AccountDetails({ accountName, onClose }) {
-  // Always call your custom hook at the top
   const { transactions, handleSave, handleDelete } = useTransactions();
 
-  // Always call useState at the top level
   const [showForm, setShowForm] = useState(false);
   const [editData, setEditData] = useState(null);
 
-  // If accountName is falsy, return early AFTER hooks are called
   if (!accountName) return null;
 
   // If you want to edit a transaction, set up the data and open the form
@@ -62,7 +59,6 @@ function AccountDetails({ accountName, onClose }) {
         </div>
       </div>
 
-      {/* Only render the form if showForm is true */}
       {showForm && (
         <TransactionInput
           onClose={() => {

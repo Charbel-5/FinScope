@@ -5,14 +5,6 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function getPreviousBusinessDay() {
   let date = new Date();
-  
-  // If the system date is in the future (beyond today's real date),
-  // fall back to today's actual date to avoid requesting data that doesn't exist in Polygon.
-  const now = new Date();
-  if (date > now) {
-    console.warn('System date is ahead of the real date. Falling back to current date.');
-    date = now;
-  }
 
   const day = date.getDay();
   if (day === 0) {
@@ -25,6 +17,8 @@ function getPreviousBusinessDay() {
     date.setDate(date.getDate() - 1);
   }
 
+  date.setDate(date.getDate() - 2);
+
   return date.toISOString().split('T')[0];
   
 }
@@ -34,7 +28,7 @@ export async function fetchStockPrices(tickers) {
   
   let attempts = 0;
   const maxAttempts = 5;
-  const retryDelay = 1000; // 1 second
+  const retryDelay = 1000;
   const date = getPreviousBusinessDay();
 
   while (attempts < maxAttempts) {

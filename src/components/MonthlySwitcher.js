@@ -1,4 +1,3 @@
-// ...existing code...
 import React, { useState } from 'react';
 import './MonthlySwitcher.css';
 

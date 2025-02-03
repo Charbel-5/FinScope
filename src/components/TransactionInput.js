@@ -121,7 +121,7 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
       const numValue = Math.abs(parseFloat(value));
       setFormData(prev => ({
         ...prev,
-        [name]: numValue || '' // Use empty string if NaN
+        [name]: numValue || ''
       }));
       return;
     }

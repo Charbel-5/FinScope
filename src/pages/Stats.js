@@ -22,7 +22,6 @@ function transformAllTransactionsForStockChart(allTransactions) {
   let running = 0;
   const sorted = [...allTransactions].sort((a, b) => new Date(a.transaction_date) - new Date(b.transaction_date));
   return sorted.map(txn => {
-    // Use the correct fields from transaction data
     if (txn.transaction_type === 'Income') {
       running += parseFloat(txn.transaction_amount);
     } else if (txn.transaction_type === 'Expense') {
@@ -43,7 +42,7 @@ function Stats() {
   const { user } = useAuth();
   const stockData = transformAllTransactionsForStockChart(transactions);
 
-  // Add getCurrentMonthYear helper function
+  // getCurrentMonthYear helper function
   const getCurrentMonthYear = () => {
     const now = new Date();
     return now.toLocaleString('default', { month: 'long', year: 'numeric' });
@@ -119,7 +118,6 @@ function Stats() {
 
   const netBalance = totalIncome - totalExpense;
 
-  // Fix pie chart data preparation
   const expenseCategoryData = monthlyTransactions
     .filter(t => t.transaction_type === 'Expense' && t.transaction_category)
     .reduce((acc, t) => {
@@ -303,8 +301,8 @@ function Stats() {
                   outerRadius={100}
                   label
                 >
-                  <Cell fill="#82ca9d" /> {/* Income color */}
-                  <Cell fill="#8884d8" /> {/* Expense color */}
+                  <Cell fill="#82ca9d" />
+                  <Cell fill="#8884d8" />
                 </Pie>
                 <Tooltip formatter={(value) => `${value.toFixed(2)} ${primaryCurrencySymbol}`} />
                 <Legend />

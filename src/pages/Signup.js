@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
-import './Settings.css'; // Reuse settings styles
+import './Settings.css';
 
 function Signup({ onSuccess }) {
   const { signup } = useAuth();
@@ -116,7 +116,6 @@ function Signup({ onSuccess }) {
       if (response.status === 201) {
         // Close signup modal and open login modal
         onSuccess();
-        // You'll need to pass a function to open login modal from LandingPage
       }
     } catch (err) {
       console.error('Signup error:', err);

@@ -29,7 +29,6 @@ function AppContent() {
 
   return (
     <Router>
-      {/* Show navbar only if desired, or conditionally if token */}
       {isAuthenticated && (
         <>
           <MainNavbar />
@@ -88,7 +87,6 @@ function AppContent() {
           }
         />
 
-        {/* Catch-all route */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

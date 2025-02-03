@@ -119,7 +119,7 @@ function Settings() {
   };
 
   const validatePassword = (password) => {
-    if (password === '********') return ''; // Skip validation if password unchanged
+    if (password === '********') return '';
     
     if (password.length < 8) {
       return 'Password must be at least 8 characters long';
@@ -144,7 +144,6 @@ function Settings() {
   const handleSave = async (e) => {
     e.preventDefault();
     
-    // Validate all fields before saving
     const emailError = validateEmail(formData.email);
     const passwordError = validatePassword(formData.password);
     
@@ -155,12 +154,10 @@ function Settings() {
     
     setErrors(newErrors);
     
-    // Don't save if there are any errors
     if (emailError || passwordError) {
       return;
     }
     
-    // Rest of your existing save logic
     try {
       const currenciesChanged = 
         formData.mainCurrencyName !== initialData.mainCurrencyName || 

@@ -46,12 +46,10 @@ function LandingPage() {
               FinScope
             </div>
           </div>
-          {/* Regular buttons for desktop */}
           <div className="navbar__actions">
             <button className="btn--signup" onClick={() => setShowLogin(true)}>Login</button>
             <button className="btn--signup" onClick={() => setShowSignup(true)}>Sign Up</button>
           </div>
-          {/* Burger menu for mobile */}
           <div 
             className="navbar__burger" 
             onClick={toggleMobileMenu}
@@ -88,16 +86,12 @@ function LandingPage() {
             />
           </div>
         </div>
-        {/* Mobile menu items */}
         <div className={`navbar__items ${isMobileMenuVisible ? 'visible' : ''}`}>
           <button className="btn--signup" onClick={() => setShowLogin(true)}>Login</button>
           <button className="btn--signup" onClick={() => setShowSignup(true)}>Sign Up</button>
         </div>
       </nav>
       
-      {/* Rest of your landing page content */}
-
-      {/* HERO SECTION */}
       <section className="hero">
         <div className="hero__content">
           <h1 className="hero__title">Welcome to FinScope</h1>
@@ -110,7 +104,6 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* WELCOME SECTION */}
       <section className="section">
         <div className="section__container">
           <h2 className="section__title">Experience Next-Gen Finance</h2>
@@ -124,7 +117,6 @@ function LandingPage() {
 
       <br></br>
 
-      {/* EXAMPLE GRID ROW 1 */}
       <div className="grid-row">
         <div className="grid-col">
           <h2>Smart Financial Management</h2>
@@ -150,7 +142,6 @@ function LandingPage() {
         </div>
       </div>
 
-      {/* EXAMPLE GRID ROW 2 */}
       <div className="grid-row">
         <div className="grid-col">
           <h2>Visual Financial Insights</h2>
@@ -175,7 +166,6 @@ function LandingPage() {
         </div>
       </div>
 
-      {/* EXAMPLE GRID ROW 3 */}
       <div className="grid-row">
         <div className="grid-col">
           <h2>Debt Management Tools</h2>
@@ -201,7 +191,6 @@ function LandingPage() {
         </div>
       </div>
 
-      {/* WHY CHOOSE FINSCOPE? */}
       <section className="section">
         <div className="section__container">
           <h2 className="section__title">Why Choose FinScope?</h2>
@@ -222,7 +211,6 @@ function LandingPage() {
         <br></br>
       </div>
 
-      {/* Features Section (existing) */}
       <section className="section">
         <div className="section__container">
           <h2 className="section__title">Your Finance, Simplified</h2>
@@ -238,9 +226,7 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* Feature Grid (existing) */}
       <div className="grid-row">
-        {/* ... Keep existing grid content ... */}
       </div>
 
  
@@ -256,7 +242,6 @@ function LandingPage() {
         </AuthModal>
       )}
 
-      {/* FOOTER */}
       <footer className="footer">
         <p>&copy; 2025 FinScope. All rights reserved.</p>
       </footer>

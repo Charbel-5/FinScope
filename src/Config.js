@@ -1,5 +1,5 @@
 const config = {
-    apiBaseUrl: 'http://localhost:3000', // Replace with your actual backend URL
+    apiBaseUrl: 'http://localhost:3000',
   };
   
   export default config;
