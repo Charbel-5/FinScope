@@ -164,21 +164,14 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
-    // Set default category if none selected
-    const submissionData = {
+    const transactionData = {
       ...formData,
-      transaction_type: transactionType,
-      transaction_category: formData.transaction_category || 'Other'
+      user_id: user.userId,
+      transaction_type: transactionType
     };
-
-    onSave(submissionData);
+    await onSave(transactionData);
     onClose();
   };
 

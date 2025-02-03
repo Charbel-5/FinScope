@@ -47,17 +47,23 @@ function useTransactionsLogic() {
   async function handleSave(updatedTxn) {
     try {
       if (updatedTxn.transaction_id) {
-        // Edit existing
-        await axios.put(`/api/complex/transaction/${updatedTxn.transaction_id}`, updatedTxn);
+        // Edit existing - Add user_id to the request
+        await axios.put(`/api/complex/transaction/${updatedTxn.transaction_id}`, {
+          ...updatedTxn,
+          user_id: user.userId
+        });
       } else {
-        // Add new
-        await axios.post(`/api/complex/transaction`, { ...updatedTxn, user_id: user.userId });
+        // Add new (already has user_id)
+        await axios.post(`/api/complex/transaction`, { 
+          ...updatedTxn, 
+          user_id: user.userId 
+        });
       }
       // Refetch all transactions to get updated data with currency symbols
       const response = await axios.get(`/api/complex/transactions/${user.userId}`);
       setTransactions(response.data);
     } catch (err) {
-      setError(err);
+      setError(err); 
     }
   }
 

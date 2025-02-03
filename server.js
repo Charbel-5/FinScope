@@ -9,7 +9,7 @@ const app = express();
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const SECRET_KEY = 'CHANGE_THIS_SECRET';
+const SECRET_KEY = 'A_SECRET';
 const PORT = 3000;
 
 app.use(cors());
@@ -19,13 +19,6 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-app.get('/', (req, res) => {
-  res.sendFile(path.resolve(__dirname, 'public/index.html'));
-});
-
-app.get('/login', (req, res) => {
-  res.sendFile(path.resolve(__dirname, 'public/login.html'));
-});
 
 // =============================
 //  CRUD for transactions
@@ -720,6 +713,7 @@ app.get('/api/complex/transactions/:userId', async (req, res) => {
 app.put('/api/complex/transaction/:transactionId', async (req, res) => {
   const { transactionId } = req.params;
   const {
+    user_id,
     transaction_date,
     transaction_amount,
     transaction_name,
@@ -759,8 +753,8 @@ app.put('/api/complex/transaction/:transactionId', async (req, res) => {
 
     // 3) Find from_account_id
     const [[fromAccountRow]] = await conn.query(
-      'SELECT account_id FROM account WHERE name = ?',
-      [from_account]
+      'SELECT account_id FROM account WHERE name = ? AND user_id = ?',
+      [from_account, user_id]
     );
 
     if (!fromAccountRow) {
@@ -772,8 +766,8 @@ app.put('/api/complex/transaction/:transactionId', async (req, res) => {
     let to_account_id = null;
     if (to_account) {
       const [[toAccountRow]] = await conn.query(
-        'SELECT account_id FROM account WHERE name = ?',
-        [to_account]
+        'SELECT account_id FROM account WHERE name = ? AND user_id = ?',
+        [to_account, user_id]
       );
 
       if (!toAccountRow) {
@@ -829,7 +823,7 @@ app.delete('/api/complex/transaction/:transactionId', async (req, res) => {
   }
 });
 
-// 4) Add a transaction given userId + text attributes
+// 4) Add a transaction given userId
 app.post('/api/complex/transaction', async (req, res) => {
   const {
     user_id,
@@ -870,8 +864,8 @@ app.post('/api/complex/transaction', async (req, res) => {
 
     // 2) Find the foreign keys for from_account and to_account based on account name
     const [[fromAccountRow]] = await conn.query(
-      'SELECT account_id FROM account WHERE name = ?',
-      [from_account]
+      'SELECT account_id FROM account WHERE name = ? AND user_id = ?',
+      [from_account, user_id]
     );
 
     if (!fromAccountRow) {
@@ -882,8 +876,8 @@ app.post('/api/complex/transaction', async (req, res) => {
     let to_account_id = null;
     if (to_account) {
       const [[toAccountRow]] = await conn.query(
-        'SELECT account_id FROM account WHERE name = ?',
-        [to_account]
+        'SELECT account_id FROM account WHERE name = ? AND user_id = ?',
+        [to_account, user_id]
       );
 
       if (!toAccountRow) {
@@ -1180,7 +1174,6 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// New endpoint: Login
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   try {
