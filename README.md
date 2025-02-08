@@ -69,7 +69,7 @@ cd finscope
 
 ### Frontend Dependencies
 ```bash
-npm install react react-dom react-router-dom @polygon.io/client-js axios react-chartjs-2 recharts
+npm install react react-dom react-router-dom @polygon.io/client-js axios react-chartjs-2 recharts validator
 ```
 
 ### Backend Dependencies
