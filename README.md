@@ -104,7 +104,7 @@ const config = {
 };
 ```
 
-2. Modify `db.js`:
+2. Modify `src/db.js`:
 ```javascript
 const pool = mysql.createPool({
   host: 'localhost',
