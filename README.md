@@ -128,3 +128,25 @@ node server.js
 ```bash
 npm start
 ```
+
+## Screenshots 📸
+
+### Account Management
+![Account Dashboard](./images/Accounts.png)
+*Main dashboard showing account overview and balances*
+
+### Transaction Tracking
+![Transaction Management](./images/Transactions.png)
+*Interface for managing and categorizing transactions*
+
+### Investment Portfolio
+![Investment Tracking](./images/Stocks.png)
+*Real-time stock portfolio monitoring*
+
+### Financial Analytics
+![Analytics Dashboard](./images/Stats.png)
+*Interactive charts showing spending patterns and financial trends*
+
+### Debt Management
+![Debt Calculator](./images/Debt_Tracking.png)
+*Tools for planning and tracking debt repayment*
