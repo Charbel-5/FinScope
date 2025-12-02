@@ -7,7 +7,7 @@
 SET FOREIGN_KEY_CHECKS = 0;
 
 
-CREATE DATABASE finscope;
+CREATE DATABASE IF NOT EXISTS finscope;
 
 USE finscope;
  

@@ -1,0 +1,13 @@
+option_settings:
+  aws:elasticbeanstalk:application:environment:
+    NODE_ENV: production
+    PORT: 3000
+    DB_HOST: "${DB_HOST}"
+    DB_USER: "${DB_USER}"
+    DB_PASSWORD: "${DB_PASSWORD}"
+    DB_NAME: "finscope"
+    JWT_SECRET: "${JWT_SECRET}"
+  aws:elasticbeanstalk:container:nodejs:
+    NodeCommand: "node server.js"
+  aws:elasticbeanstalk:environment:
+    ServiceRole: "aws-elasticbeanstalk-service-role"
