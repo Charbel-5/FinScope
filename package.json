@@ -24,10 +24,10 @@
     "validator": "^13.12.0"
   },
   "scripts": {
-    "start": "set PORT=3001 && react-scripts start",
-    "build": "CI= react-scripts build",
+    "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "start:backend": "node server.js"
   },
   "eslintConfig": {
     "extends": [
@@ -46,5 +46,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0"
   }
 }
