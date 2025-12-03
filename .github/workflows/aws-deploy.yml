@@ -52,6 +52,4 @@ jobs:
             --environment-name "$EB_ENV_NAME" \
             --version-label "$VERSION_LABEL"
 
-      - name: Deploy frontend to S3
-        run: |
-          aws s3 sync build/ s3://${{ secrets.AWS_S3_FRONTEND_BUCKET }} --delete
+      # Frontend is currently served by Elastic Beanstalk; S3 deploy is disabled.
