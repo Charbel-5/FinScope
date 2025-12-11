@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import config from '../Config';
 
 const AuthContext = createContext(null);
 
@@ -23,7 +24,7 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('/api/login', { email, password });
+      const response = await axios.post(`${config.apiBaseUrl}/api/login`, { email, password });
       const { token, userId, userName } = response.data;
       const userData = { userId, userName };
       localStorage.setItem('token', token);
@@ -47,7 +48,7 @@ export function AuthProvider({ children }) {
   const signup = async (email, password, userName, primaryCurrency, secondaryCurrency, conversionRate) => {
     try {
       // Register user
-      const response = await axios.post('/api/register', {
+      const response = await axios.post(`${config.apiBaseUrl}/api/register`, {
         email,
         password,
         user_name: userName,
@@ -56,7 +57,7 @@ export function AuthProvider({ children }) {
       });
 
       // After registration, automatically set the initial conversion rate
-      await axios.post('/api/currency_rates', {
+      await axios.post(`${config.apiBaseUrl}/api/currency_rates`, {
         conversion_rate: conversionRate,
         start_date: new Date().toISOString().split('T')[0],
         user_id: response.data.userId 

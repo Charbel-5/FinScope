@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-
-axios.defaults.baseURL = 'http://localhost:3000';
+import config from '../Config';
 
 const userId = 2;
 
@@ -12,7 +11,6 @@ export function sortTransactionsByDateDescending(txns) {
     return dateB - dateA;
   });
 }
-
 
 export function groupTransactionsByMonthFromCurrent(txns) {
   if (!txns || txns.length === 0) return [];
@@ -45,20 +43,18 @@ export function groupTransactionsByMonthFromCurrent(txns) {
   return results;
 }
 
-
 export function transformMonthTransactionsToDailyData(transactions) {
   const dailyMap = {};
 
   transactions.forEach(txn => {
     const day = new Date(txn.transaction_date).getDate();
     if (!dailyMap[day]) {
-      dailyMap[day] = { 
-        date: String(day).padStart(2, '0'), 
-        income: 0, 
-        expense: 0 
+      dailyMap[day] = {
+        date: String(day).padStart(2, '0'),
+        income: 0,
+        expense: 0
       };
     }
-    // Use transaction_type and transaction_amount from the actual data
     if (txn.transaction_type === 'Income') {
       dailyMap[day].income += parseFloat(txn.transaction_amount);
     } else if (txn.transaction_type === 'Expense') {
@@ -69,18 +65,6 @@ export function transformMonthTransactionsToDailyData(transactions) {
   return Object.values(dailyMap).sort((a, b) => parseInt(a.date) - parseInt(b.date));
 }
 
-//-------------------------------------logic for the monthly switcher---------------
-// For the MonthlySwitcher component to display the name of the month and year.
-//what does the map exactly do, it just goes through every element in the array, and or every element it created a date object
-//avaliable months
-
-//-----------------------------------logic for the form and for the add button-----------------------------
-//Handling save for editing and adding
-//handle save
-
-//this function when passes the id, it uses the hook and creates an array where it filters out the transaction with the id in question
-//handle delete
-// Custom hook
 export function useTransactions() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -89,45 +73,42 @@ export function useTransactions() {
   useEffect(() => {
     async function fetchTransactions() {
       try {
-        console.log("hello world");
-        const response = await axios.get(`/api/complex/transactions/${userId}`);
-        console.log('Fetched transactions:', response.data); // Debugging log
+        console.log('hello world');
+        const response = await axios.get(
+          `${config.apiBaseUrl}/api/complex/transactions/${userId}`
+        );
+        console.log('Fetched transactions:', response.data);
         setTransactions(response.data);
       } catch (err) {
-        console.error('Error fetching transactions:', err); // Debugging log
+        console.error('Error fetching transactions:', err);
         setError(err);
       } finally {
         setLoading(false);
-        console.log("bye world");
+        console.log('bye world');
       }
     }
 
     fetchTransactions();
   }, []);
 
-  // Sort and group transactions
   const sortedTransactions = sortTransactionsByDateDescending(transactions);
   const transactionsGrouped = groupTransactionsByMonthFromCurrent(sortedTransactions);
 
   console.log('Sorted transactions:', sortedTransactions);
   console.log('Grouped transactions:', transactionsGrouped);
 
-  // Available months for MonthlySwitcher
   const availableMonths = transactionsGrouped.map((g) => {
     const date = new Date(g.year, g.month, 1);
     return date.toLocaleString('default', { month: 'long', year: 'numeric' });
   });
 
-  // Handle saving (add/edit) transactions
   const handleSave = async (updatedTxn) => {
     try {
-      if (updatedTxn.id) {
-        // Edit existing
-        await axios.post(`/api/${userId}/transactions`, updatedTxn);
-      } else {
-        // Add new
-        await axios.post(`/api/${userId}/transactions`, updatedTxn);
-      }
+      await axios.post(
+        `${config.apiBaseUrl}/api/${userId}/transactions`,
+        updatedTxn
+      );
+
       setTransactions((prev) => {
         if (updatedTxn.id) {
           return prev.map((t) => (t.id === updatedTxn.id ? updatedTxn : t));
@@ -142,10 +123,9 @@ export function useTransactions() {
     }
   };
 
-  // Handle deleting transactions
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`/api/transactions/${id}`);
+      await axios.delete(`${config.apiBaseUrl}/api/transactions/${id}`);
       setTransactions((prev) => prev.filter((txn) => txn.id !== id));
     } catch (err) {
       console.error('Error deleting transaction:', err);

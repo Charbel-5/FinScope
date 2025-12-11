@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { fetchStockPrices } from '../Services/StocksData';
+import config from '../Config';
 import { useAuth } from './AuthContext';
 
 const StocksContext = createContext();
@@ -13,17 +14,20 @@ function StocksProvider({ children }) {
 
   const { user } = useAuth();
 
-  // Fetch holdings from database
   useEffect(() => {
     async function fetchHoldings() {
-      if (!user) return; 
+      if (!user) return;
       setLoading(true);
       try {
-        const response = await axios.get(`/api/user_stocks/${user.userId}`);
-        setStockHoldings(response.data.map(holding => ({
-          ticker: holding.stock_ticker,
-          quantity: holding.stock_amount
-        })));
+        const response = await axios.get(
+          `${config.apiBaseUrl}/api/user_stocks/${user.userId}`
+        );
+        setStockHoldings(
+          response.data.map((holding) => ({
+            ticker: holding.stock_ticker,
+            quantity: holding.stock_amount,
+          }))
+        );
         setError(null);
       } catch (err) {
         console.error('Failed to fetch stock holdings:', err);
@@ -35,14 +39,13 @@ function StocksProvider({ children }) {
     fetchHoldings();
   }, [user]);
 
-  // Fetch prices whenever holdings change
   useEffect(() => {
     async function updatePrices() {
       if (stockHoldings.length === 0) return;
-      
+
       setLoading(true);
       try {
-        const tickers = stockHoldings.map(h => h.ticker);
+        const tickers = stockHoldings.map((h) => h.ticker);
         const prices = await fetchStockPrices(tickers);
         setStockPrices(prices);
         setError(null);
@@ -75,43 +78,47 @@ function StocksProvider({ children }) {
 
   async function addStock(ticker, quantity) {
     try {
-      await axios.post('/api/user_stocks', {
+      await axios.post(`${config.apiBaseUrl}/api/user_stocks`, {
         stock_ticker: ticker.toUpperCase(),
         stock_amount: Number(parseFloat(quantity).toFixed(5)),
-        user_id: user.userId
+        user_id: user.userId,
       });
-      
-      setStockHoldings(prev => [...prev, { 
-        ticker: ticker.toUpperCase(), 
-        quantity: Number(parseFloat(quantity).toFixed(5))
-      }]);
+
+      setStockHoldings((prev) => [
+        ...prev,
+        {
+          ticker: ticker.toUpperCase(),
+          quantity: Number(parseFloat(quantity).toFixed(5)),
+        },
+      ]);
     } catch (err) {
       console.error('Failed to add stock:', err);
       throw err;
     }
   }
 
-  async function editStock(oldTicker, newTicker, newQuantity) {  
+  async function editStock(oldTicker, newTicker, newQuantity) {
     try {
-      // Find the stock_id first
-      const response = await axios.get(`/api/user_stocks/${user.userId}`);
-      const stock = response.data.find(s => s.stock_ticker === oldTicker);
-      
+      const response = await axios.get(
+        `${config.apiBaseUrl}/api/user_stocks/${user.userId}`
+      );
+      const stock = response.data.find((s) => s.stock_ticker === oldTicker);
+
       if (!stock) throw new Error('Stock not found');
 
-      await axios.put(`/api/user_stocks/${stock.stock_id}`, {
+      await axios.put(`${config.apiBaseUrl}/api/user_stocks/${stock.stock_id}`, {
         stock_ticker: newTicker.toUpperCase(),
         stock_amount: Number(parseFloat(newQuantity).toFixed(5)),
-        user_id: user.userId
+        user_id: user.userId,
       });
 
-      setStockHoldings(prev => 
-        prev.map(s => 
-          s.ticker === oldTicker 
-            ? { 
-                ticker: newTicker.toUpperCase(), 
-                quantity: Number(parseFloat(newQuantity).toFixed(5)) 
-              } 
+      setStockHoldings((prev) =>
+        prev.map((s) =>
+          s.ticker === oldTicker
+            ? {
+                ticker: newTicker.toUpperCase(),
+                quantity: Number(parseFloat(newQuantity).toFixed(5)),
+              }
             : s
         )
       );
@@ -123,13 +130,15 @@ function StocksProvider({ children }) {
 
   async function deleteStock(ticker) {
     try {
-      const response = await axios.get(`/api/user_stocks/${user.userId}`);
-      const stock = response.data.find(s => s.stock_ticker === ticker);
-      
+      const response = await axios.get(
+        `${config.apiBaseUrl}/api/user_stocks/${user.userId}`
+      );
+      const stock = response.data.find((s) => s.stock_ticker === ticker);
+
       if (!stock) throw new Error('Stock not found');
 
-      await axios.delete(`/api/user_stocks/${stock.stock_id}`);
-      setStockHoldings(prev => prev.filter(s => s.ticker !== ticker));
+      await axios.delete(`${config.apiBaseUrl}/api/user_stocks/${stock.stock_id}`);
+      setStockHoldings((prev) => prev.filter((s) => s.ticker !== ticker));
     } catch (err) {
       console.error('Failed to delete stock:', err);
       throw err;
@@ -147,7 +156,7 @@ function StocksProvider({ children }) {
         editStock,
         deleteStock,
         loading,
-        error
+        error,
       }}
     >
       {children}

@@ -5,6 +5,7 @@ import { transformMonthTransactionsToDailyData } from '../Services/TransactionsD
 import MonthlySwitcher from '../components/MonthlySwitcher';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import config from '../Config';
 import './Stats.css';
 
 const COLORS = [
@@ -53,8 +54,8 @@ function Stats() {
     async function fetchCurrencyInfo() {
       if (!user?.userId) return;
       const [userAttrs, ratesRes] = await Promise.all([
-        axios.get(`/api/complex/userAttributes/${user.userId}`),
-        axios.get(`/api/currency_rates/${user.userId}`)
+        axios.get(`${config.apiBaseUrl}/api/complex/userAttributes/${user.userId}`),
+        axios.get(`${config.apiBaseUrl}/api/currency_rates/${user.userId}`)
       ]);
       setPrimaryCurrencySymbol(userAttrs.data.primary_currency_symbol);
       setConversionRates(ratesRes.data);

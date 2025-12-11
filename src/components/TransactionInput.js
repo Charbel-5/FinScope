@@ -3,6 +3,7 @@ import axios from 'axios';
 import validator from 'validator';
 import './TransactionInput.css';
 import { useAuth } from '../context/AuthContext';
+import config from '../Config';
 
 function TransactionInput({ onClose, onSave, initialTransaction }) {
   const { user } = useAuth();
@@ -43,10 +44,11 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
   }, [initialTransaction]);
 
   useEffect(() => {
-    // Fetch user accounts
     async function fetchAccounts() {
       try {
-        const res = await axios.get(`/api/accounts/${user?.userId}`);
+        const res = await axios.get(
+          `${config.apiBaseUrl}/api/accounts/${user?.userId}`
+        );
         setAccounts(res.data);
       } catch (err) {
         console.error('Error fetching accounts:', err);
@@ -59,14 +61,14 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
   }, [user?.userId]);
 
   useEffect(() => {
-    // Fetch categories by transaction type
     async function fetchCategories() {
       try {
-        const res = await axios.get(`/api/transaction_categories`); 
-        // Filter them if needed for type
+        const res = await axios.get(
+          `${config.apiBaseUrl}/api/transaction_categories`
+        );
         const typeLower = transactionType.toLowerCase();
-        const filtered = res.data.filter(cat => {
-          if (typeLower === 'income') return cat.transaction_type_id === 1; // example
+        const filtered = res.data.filter((cat) => {
+          if (typeLower === 'income') return cat.transaction_type_id === 1;
           if (typeLower === 'expense') return cat.transaction_type_id === 2;
           if (typeLower === 'transfer') return cat.transaction_type_id === 3;
           return false;
@@ -80,13 +82,17 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
   }, [transactionType]);
 
   useEffect(() => {
-    // Fetch currency of from_account
     async function fetchCurrency() {
       try {
         if (formData.from_account && user?.userId) {
-          const res = await axios.get(`/api/accounts/${user.userId}/currencySymbol/${formData.from_account}`);
+          const res = await axios.get(
+            `${config.apiBaseUrl}/api/accounts/${user.userId}/currencySymbol/${formData.from_account}`
+          );
           setCurrencySymbol(res.data.currency_symbol || '');
-          setFormData(prev => ({ ...prev, currency: res.data.currency_symbol || '' }));
+          setFormData((prev) => ({
+            ...prev,
+            currency: res.data.currency_symbol || '',
+          }));
         }
       } catch (err) {
         console.error('Error fetching currency:', err);
@@ -95,63 +101,55 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
     fetchCurrency();
   }, [formData.from_account, user?.userId]);
 
-  // Add new useEffect to reset category when type changes
   useEffect(() => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      transaction_category: initialTransaction?.transaction_type === transactionType 
-        ? initialTransaction?.transaction_category 
-        : ''
+      transaction_category:
+        initialTransaction?.transaction_type === transactionType
+          ? initialTransaction?.transaction_category
+          : '',
     }));
   }, [transactionType, initialTransaction]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    // Clear error for the field being changed
-    setErrors(prev => {
+
+    setErrors((prev) => {
       const newErrors = { ...prev };
       delete newErrors[name];
       return newErrors;
     });
 
-    // Special handling for amount field
     if (name === 'transaction_amount') {
-      // Convert to number and ensure it's positive
       const numValue = Math.abs(parseFloat(value));
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [name]: numValue || ''
+        [name]: numValue || '',
       }));
       return;
     }
-  
-    // Normal handling for other fields
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const validateForm = () => {
     const newErrors = {};
 
-    // Date validation
     if (validator.isEmpty(formData.transaction_date)) {
       newErrors.transaction_date = 'Date is required';
     }
 
-    // Amount validation  
     if (!formData.transaction_amount || formData.transaction_amount <= 0) {
       newErrors.transaction_amount = 'Please enter a valid positive amount';
     }
 
-    // From account validation
     if (validator.isEmpty(formData.from_account)) {
       newErrors.from_account = 'Please select an account';
     }
 
-    // To account validation for transfers - Sequential validation
     if (transactionType === 'Transfer') {
       if (validator.isEmpty(formData.to_account)) {
         newErrors.to_account = 'Please select an account';
@@ -166,10 +164,11 @@ function TransactionInput({ onClose, onSave, initialTransaction }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
     const transactionData = {
       ...formData,
       user_id: user.userId,
-      transaction_type: transactionType
+      transaction_type: transactionType,
     };
     await onSave(transactionData);
     onClose();

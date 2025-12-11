@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import './Settings.css';
+import config from '../Config';
 
 function Signup({ onSuccess }) {
   const { signup } = useAuth();
@@ -21,17 +22,21 @@ function Signup({ onSuccess }) {
   useEffect(() => {
     async function fetchCurrencies() {
       try {
-        const response = await axios.get('/api/currencies');
-        setAllCurrencies(response.data.map(c => ({
-          name: c.currency_name,
-          symbol: c.symbol
-        })));
+        const response = await axios.get(
+          `${config.apiBaseUrl}/api/currencies`
+        );
+        setAllCurrencies(
+          response.data.map((c) => ({
+            name: c.currency_name,
+            symbol: c.symbol,
+          }))
+        );
         // Set default currencies
         if (response.data.length >= 2) {
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
             mainCurrencyName: response.data[0].currency_name,
-            secondaryCurrencyName: response.data[1].currency_name
+            secondaryCurrencyName: response.data[1].currency_name,
           }));
         }
       } catch (err) {
@@ -43,9 +48,9 @@ function Signup({ onSuccess }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -63,10 +68,13 @@ function Signup({ onSuccess }) {
       newErrors.password = 'Password must be at least 8 characters long';
     }
     if (!/[A-Z]/.test(formData.password)) {
-      newErrors.password = (newErrors.password || '') + ' Include at least one uppercase letter';
+      newErrors.password =
+        (newErrors.password || '') +
+        ' Include at least one uppercase letter';
     }
     if (!/[0-9]/.test(formData.password)) {
-      newErrors.password = (newErrors.password || '') + ' Include at least one number';
+      newErrors.password =
+        (newErrors.password || '') + ' Include at least one number';
     }
 
     // Username validation
@@ -82,13 +90,15 @@ function Signup({ onSuccess }) {
       newErrors.secondaryCurrencyName = 'Please select a secondary currency';
     }
     if (formData.mainCurrencyName === formData.secondaryCurrencyName) {
-      newErrors.secondaryCurrencyName = 'Secondary currency must be different from main currency';
+      newErrors.secondaryCurrencyName =
+        'Secondary currency must be different from main currency';
     }
 
     // Conversion rate validation
     const rate = parseFloat(formData.conversionRate);
     if (isNaN(rate) || rate <= 0) {
-      newErrors.conversionRate = 'Please enter a valid positive number';
+      newErrors.conversionRate =
+        'Please enter a valid positive number';
     }
 
     setErrors(newErrors);
@@ -97,21 +107,23 @@ function Signup({ onSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     try {
-      // Get currency IDs from currency names
-      const response = await axios.post('/api/register', {
-        email: formData.email,
-        password: formData.password,
-        user_name: formData.username,
-        primary_currency_name: formData.mainCurrencyName, 
-        secondary_currency_name: formData.secondaryCurrencyName,
-        conversion_rate: parseFloat(formData.conversionRate)
-      });
+      const response = await axios.post(
+        `${config.apiBaseUrl}/api/register`,
+        {
+          email: formData.email,
+          password: formData.password,
+          user_name: formData.username,
+          primary_currency_name: formData.mainCurrencyName,
+          secondary_currency_name: formData.secondaryCurrencyName,
+          conversion_rate: parseFloat(formData.conversionRate),
+        }
+      );
 
       if (response.status === 201) {
         // Close signup modal and open login modal
@@ -119,13 +131,14 @@ function Signup({ onSuccess }) {
       }
     } catch (err) {
       console.error('Signup error:', err);
-      const errorMessage = err.response?.status === 409 
-        ? 'This email is already registered. Please use a different email or login.'
-        : err.response?.data?.error || 'Signup failed. Please try again.';
-      
-      setErrors(prev => ({
+      const errorMessage =
+        err.response?.status === 409
+          ? 'This email is already registered. Please use a different email or login.'
+          : err.response?.data?.error || 'Signup failed. Please try again.';
+
+      setErrors((prev) => ({
         ...prev,
-        email: errorMessage
+        email: errorMessage,
       }));
     }
   };
@@ -143,7 +156,9 @@ function Signup({ onSuccess }) {
             onChange={handleChange}
             required
           />
-          {errors.email && <span className="error-message">{errors.email}</span>}
+          {errors.email && (
+            <span className="error-message">{errors.email}</span>
+          )}
         </div>
 
         <div className="settings-group">
@@ -154,7 +169,9 @@ function Signup({ onSuccess }) {
             onChange={handleChange}
             required
           />
-          {errors.username && <span className="error-message">{errors.username}</span>}
+          {errors.username && (
+            <span className="error-message">{errors.username}</span>
+          )}
         </div>
 
         <div className="settings-group">
@@ -166,13 +183,15 @@ function Signup({ onSuccess }) {
             onChange={handleChange}
             required
           />
-          {errors.password && <span className="error-message">{errors.password}</span>}
+          {errors.password && (
+            <span className="error-message">{errors.password}</span>
+          )}
         </div>
 
         <div className="settings-group">
           <label>Main Currency</label>
-          <select 
-            name="mainCurrencyName" 
+          <select
+            name="mainCurrencyName"
             value={formData.mainCurrencyName}
             onChange={handleChange}
             required
@@ -184,7 +203,11 @@ function Signup({ onSuccess }) {
               </option>
             ))}
           </select>
-          {errors.mainCurrencyName && <span className="error-message">{errors.mainCurrencyName}</span>}
+          {errors.mainCurrencyName && (
+            <span className="error-message">
+              {errors.mainCurrencyName}
+            </span>
+          )}
         </div>
 
         <div className="settings-group">
@@ -202,7 +225,11 @@ function Signup({ onSuccess }) {
               </option>
             ))}
           </select>
-          {errors.secondaryCurrencyName && <span className="error-message">{errors.secondaryCurrencyName}</span>}
+          {errors.secondaryCurrencyName && (
+            <span className="error-message">
+              {errors.secondaryCurrencyName}
+            </span>
+          )}
         </div>
 
         <div className="settings-group">
@@ -215,7 +242,11 @@ function Signup({ onSuccess }) {
             onChange={handleChange}
             required
           />
-          {errors.conversionRate && <span className="error-message">{errors.conversionRate}</span>}
+          {errors.conversionRate && (
+            <span className="error-message">
+              {errors.conversionRate}
+            </span>
+          )}
         </div>
 
         <button type="submit">Sign Up</button>

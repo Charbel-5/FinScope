@@ -3,6 +3,7 @@ import './Settings.css';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { AlertModal } from '../components/AlertModal';
+import config from '../Config';
 
 function Settings() {
   const { user } = useAuth();
@@ -29,18 +30,18 @@ function Settings() {
 
       try {
         // Get currencies
-        const currenciesRes = await axios.get('/api/currencies');
+        const currenciesRes = await axios.get(`${config.apiBaseUrl}/api/currencies`);
         setAllCurrencies(currenciesRes.data.map(c => ({
           name: c.currency_name,
           symbol: c.symbol
         })));
 
         // Get user details
-        const userRes = await axios.get(`/api/users/${user.userId}`);
+        const userRes = await axios.get(`${config.apiBaseUrl}/api/users/${user.userId}`);
         const userData = userRes.data;
 
         // Get user attributes and latest rate
-        const userAttrsRes = await axios.get(`/api/complex/userAttributes/${user.userId}`);
+        const userAttrsRes = await axios.get(`${config.apiBaseUrl}/api/complex/userAttributes/${user.userId}`);
         const userAttrs = userAttrsRes.data;
 
         // Set form data with all current values
@@ -67,7 +68,7 @@ function Settings() {
 
   const handleExport = async () => {
     try {
-      const response = await axios.get(`/api/exportUserData/${user.userId}`, {
+      const response = await axios.get(`${config.apiBaseUrl}/api/exportUserData/${user.userId}`, {
         responseType: 'blob'  // Important for handling file downloads
       });
 
@@ -184,7 +185,7 @@ function Settings() {
         formData.secondaryCurrencyName !== initialData.secondaryCurrencyName;
 
       if (currenciesChanged) {
-        await axios.put(`/api/complex/userCurrencies/${user.userId}`, {
+        await axios.put(`${config.apiBaseUrl}/api/complex/userCurrencies/${user.userId}`, {
           primary_currency_name: formData.mainCurrencyName,
           secondary_currency_name: formData.secondaryCurrencyName,
           conversion_rate: parseFloat(formData.conversionRate) // Add this line
@@ -202,12 +203,12 @@ function Settings() {
         if (formData.password !== '********') credentials.password = formData.password;
 
         if (Object.keys(credentials).length > 0) {
-          await axios.put(`/api/users/${user.userId}`, credentials);
+          await axios.put(`${config.apiBaseUrl}/api/users/${user.userId}`, credentials);
         }
       }
 
       if (formData.conversionRate !== initialData.conversionRate) {
-        await axios.post('/api/currency_rates', {
+        await axios.post(`${config.apiBaseUrl}/api/currency_rates`, {
           conversion_rate: parseFloat(formData.conversionRate),
           start_date: new Date().toISOString().split('T')[0],
           user_id: user.userId
