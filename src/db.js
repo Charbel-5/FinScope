@@ -1,12 +1,13 @@
 const mysql = require('mysql2');
 
 const pool = mysql.createPool({
-  host: "finscope-db.cdewcsgsgqz8.me-central-1.rds.amazonaws.com",
-  user: "finscopeapp",
-  password: "StrongAppPass123!",
-  database: "finscope",
+  host: 'localhost',
+  user: 'YOUR_MYSQL_USERNAME',     // Add your MySQL username
+  password: 'YOUR_MYSQL_PASSWORD', // Add your MySQL password
+  database: 'finscope',
   waitForConnections: true,
   connectionLimit: 10,
+  queueLimit: 0
 });
 
 module.exports = pool.promise();
